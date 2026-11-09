@@ -5,6 +5,7 @@ import type { FunctionReturnType } from "convex/server"
 import { api } from "../../convex/_generated/api"
 import type { Id } from "../../convex/_generated/dataModel"
 const { t, locale } = useI18n()
+const toast = useToast()
 const localizedError = useLocalizedError()
 const getConvexToken = inject<() => Promise<string | null>>("getConvexToken")
 const props = defineProps<{ client: ConvexClient }>()
@@ -22,6 +23,12 @@ const density = useCookie<"comfortable" | "compact">("product-grid-density", {
 	sameSite: "lax",
 })
 const compact = computed(() => density.value === "compact")
+const rateAfterCreating = useCookie<boolean>("rate-after-creating-product", {
+	default: () => false,
+	maxAge: 60 * 60 * 24 * 365,
+	sameSite: "lax",
+})
+const pendingRatingId = ref<Id<"products"> | null>(null)
 const cardRatingLimit = computed(() => (compact.value ? 3 : 4))
 const selected = ref<Product | null>(null)
 const editing = ref(false)
@@ -151,6 +158,7 @@ const stop = props.client.onUpdate(
 		error.value = localizedError(cause)
 		products.value = null
 		selected.value = null
+		pendingRatingId.value = null
 		editing.value = false
 	},
 )
@@ -160,6 +168,7 @@ function clearFilters() {
 	tag.value = 0
 }
 function edit(product?: Product) {
+	pendingRatingId.value = null
 	editId.value = product?._id
 	Object.assign(form, {
 		name: product?.name ?? "",
@@ -189,6 +198,14 @@ function open(product: Product) {
 	score.value = product.mine?.score ?? 3
 	note.value = product.mine?.note ?? ""
 }
+watch([products, pendingRatingId], () => {
+	if (!pendingRatingId.value) return
+	const product = products.value?.find((p) => p._id === pendingRatingId.value)
+	if (product) {
+		pendingRatingId.value = null
+		open(product)
+	}
+})
 async function run(action: () => Promise<unknown>) {
 	busy.value = true
 	error.value = ""
@@ -212,7 +229,8 @@ async function remove(product: Product) {
 }
 async function save() {
 	await run(async () => {
-		await props.client.mutation(api.products.save, {
+		const shouldRate = !editId.value && rateAfterCreating.value
+		const productId = await props.client.mutation(api.products.save, {
 			...form,
 			id: editId.value,
 			tags: form.tags
@@ -221,6 +239,20 @@ async function save() {
 				.filter(Boolean),
 		})
 		editing.value = false
+		if (shouldRate) pendingRatingId.value = productId
+	})
+}
+async function saveRating() {
+	if (!selected.value) return
+	const productId = selected.value._id
+	await run(async () => {
+		await props.client.mutation(api.products.rate, {
+			productId,
+			score: score.value,
+			note: note.value,
+		})
+		selected.value = null
+		toast.add({ title: t("ratingSaved"), color: "success" })
 	})
 }
 </script>
@@ -615,6 +647,12 @@ async function save() {
 								:placeholder="t('coffeeKitchen')"
 						/></UFormField>
 					</div>
+					<UCheckbox
+						v-if="!editId"
+						v-model="rateAfterCreating"
+						:label="t('rateAfterCreating')"
+						:disabled="busy"
+					/>
 					<UAlert
 						v-if="error"
 						:title="t('couldNotSaveProduct')"
@@ -765,15 +803,7 @@ async function save() {
 					>
 						<form
 							class="bg-muted/50 p-5 sm:p-6 space-y-5"
-							@submit.prevent="
-								run(async () => {
-									await client.mutation(api.products.rate, {
-										productId: selected!._id,
-										score,
-										note,
-									})
-								})
-							"
+							@submit.prevent="saveRating"
 						>
 							<div class="flex items-center gap-3">
 								<UAvatar
