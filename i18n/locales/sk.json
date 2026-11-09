@@ -116,7 +116,7 @@
 	"validation0": "Zadajte platný odkaz na produkt.",
 	"validation1": "Použite odkaz http alebo https.",
 	"validation2": "Použite najviac 10 štítkov.",
-	"validation3": "Vyberte celé číslo od 1 do 5.",
+	"validation3": "Vyberte hodnotenie od 0,5 do 5 po 0,5 bodu.",
 	"validation4": "Produkt už neexistuje.",
 	"validation5": "Produkt môže upraviť iba ten, kto ho pridal.",
 	"validation6": "Zadajte platné ID používateľa na Discorde.",

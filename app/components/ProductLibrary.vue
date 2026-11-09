@@ -344,7 +344,7 @@ async function save() {
 						/>
 						<span
 							aria-hidden="true"
-							class="absolute -bottom-1 -right-1 flex size-5 items-center justify-center rounded-full border-2 border-[var(--app-surface)] bg-primary text-inverted text-[0.66rem] font-semibold tabular-nums"
+							class="absolute -bottom-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-[var(--app-surface)] bg-primary px-1 text-inverted text-[0.66rem] leading-none font-semibold tabular-nums"
 							>{{ rating.score }}</span
 						>
 					</span>
@@ -627,11 +627,12 @@ async function save() {
 									<UInputRating
 										v-model="score"
 										:length="5"
-										:step="1"
+										:step="0.5"
 										:clearable="false"
 										:disabled="busy"
 										size="xl"
 										required
+										hoverable
 									/><span
 										class="text-sm font-medium tabular-nums"
 										>{{ score }} / 5</span

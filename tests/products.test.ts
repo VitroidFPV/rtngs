@@ -41,10 +41,24 @@ describe("product validation", () => {
 		])
 			expect(() => productFields({ ...product, imageUrl })).toThrow()
 	})
-	test("requires a whole-number score within the scale", () => {
-		for (const score of [0, 6, 2.5, NaN])
+	test("requires a score in half-point increments within the scale", () => {
+		for (const score of [
+			-0.5,
+			0,
+			0.25,
+			5.5,
+			6,
+			2.25,
+			NaN,
+			Infinity,
+			-Infinity,
+		])
 			expect(() => ratingFields(score, "")).toThrow()
-		expect(ratingFields(5, " Great ")).toEqual({ score: 5, note: "Great" })
+		for (const score of [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5])
+			expect(ratingFields(score, " Great ")).toEqual({
+				score,
+				note: "Great",
+			})
 	})
 })
 

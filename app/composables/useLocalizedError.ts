@@ -5,7 +5,7 @@ const validationKeys: Record<string, string> = {
 	"Enter a valid product link.": "validation0",
 	"Use an http or https link.": "validation1",
 	"Use up to 10 tags.": "validation2",
-	"Choose a whole-number rating from 1 to 5.": "validation3",
+	"Choose a rating from 0.5 to 5 in 0.5 increments.": "validation3",
 	"Product no longer exists.": "validation4",
 	"Only the person who added this product can edit it.": "validation5",
 	"Enter a valid Discord user ID.": "validation6",

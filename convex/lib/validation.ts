@@ -60,7 +60,7 @@ export function productFields(input: {
 	}
 }
 export function ratingFields(score: number, note: string) {
-	if (!Number.isInteger(score) || score < 1 || score > 5)
-		throw new ConvexError("Choose a whole-number rating from 1 to 5.")
+	if (!Number.isInteger(score * 2) || score < 0.5 || score > 5)
+		throw new ConvexError("Choose a rating from 0.5 to 5 in 0.5 increments.")
 	return { score, note: text(note, "Review", 1000) }
 }

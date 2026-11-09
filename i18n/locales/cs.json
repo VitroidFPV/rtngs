@@ -116,7 +116,7 @@
 	"validation0": "Zadejte platný odkaz na produkt.",
 	"validation1": "Použijte odkaz http nebo https.",
 	"validation2": "Použijte nejvýše 10 štítků.",
-	"validation3": "Vyberte celé číslo od 1 do 5.",
+	"validation3": "Vyberte hodnocení od 0,5 do 5 po 0,5 bodu.",
 	"validation4": "Produkt již neexistuje.",
 	"validation5": "Produkt může upravit pouze ten, kdo ho přidal.",
 	"validation6": "Zadejte platné ID uživatele na Discordu.",
