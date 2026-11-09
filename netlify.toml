@@ -1,0 +1,6 @@
+[build]
+  command = "bunx nuxt build"
+  publish = "dist"
+
+[context.production]
+  command = 'bunx convex deploy --cmd "bunx nuxt build" --cmd-url-env-var-name CONVEX_URL'
