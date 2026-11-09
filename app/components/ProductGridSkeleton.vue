@@ -1,12 +1,16 @@
+<script setup lang="ts">
+defineProps<{ compact?: boolean }>()
+</script>
+
 <template>
-	<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+	<div class="product-grid" :class="{ 'product-grid-compact': compact }">
 		<div
-			v-for="i in 4"
+			v-for="i in compact ? 8 : 4"
 			:key="i"
 			aria-hidden="true"
-			class="surface-panel min-h-64 p-5 sm:p-6 flex flex-col gap-4"
+			class="product-card surface-panel min-h-64 p-5 sm:p-6 flex flex-col gap-4"
 		>
-			<div class="flex items-center gap-4">
+			<div class="product-card-identity flex items-center gap-4">
 				<USkeleton class="size-14 shrink-0 rounded-lg" />
 				<div class="flex-1 space-y-2">
 					<USkeleton class="h-4 w-20" />

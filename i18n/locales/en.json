@@ -1,4 +1,7 @@
 {
+	"gridDensity": "Grid density",
+	"comfortableGrid": "Comfortable",
+	"compactGrid": "Compact",
 	"searchImages": "Search images",
 	"searchImagesHelp": "Search by brand and product name, then select an image to use its URL.",
 	"noImagesFound": "No images found. Try a different brand or product name.",

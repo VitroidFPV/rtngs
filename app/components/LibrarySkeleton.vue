@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const { t } = useI18n()
+const density = useCookie("product-grid-density")
 </script>
 
 <template>
@@ -13,17 +14,23 @@ const { t } = useI18n()
 			<USkeleton class="h-8 w-36" />
 		</div>
 		<div
-			class="surface-panel grid grid-cols-1 gap-4 p-4 sm:p-5 sm:grid-cols-[1fr_auto_auto]"
+			class="surface-panel grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4 p-4 sm:p-5 md:grid-cols-[minmax(0,1fr)_auto_auto_auto]"
 			aria-hidden="true"
 		>
-			<UFormField :label="t('searchProducts')">
+			<UFormField
+				:label="t('searchProducts')"
+				class="col-span-full min-w-0 md:col-span-1"
+			>
 				<UInput
 					disabled
 					:placeholder="t('nameBrandOrTag')"
 					class="w-full"
 				/>
 			</UFormField>
-			<UFormField :label="t('filterByTag')">
+			<UFormField
+				:label="t('filterByTag')"
+				class="col-span-full md:col-span-1"
+			>
 				<USelect
 					disabled
 					:items="[t('allTags')]"
@@ -39,10 +46,11 @@ const { t } = useI18n()
 					class="w-full sm:min-w-36"
 				/>
 			</UFormField>
+			<div class="inline-flex justify-self-end gap-1">
+				<USkeleton class="size-11 md:size-9" />
+				<USkeleton class="size-11 md:size-9" />
+			</div>
 		</div>
-		<div class="flex h-5 items-center" aria-hidden="true">
-			<USkeleton class="h-4 w-36" />
-		</div>
-		<ProductGridSkeleton />
+		<ProductGridSkeleton :compact="density === 'compact'" />
 	</section>
 </template>

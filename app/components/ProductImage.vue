@@ -3,7 +3,7 @@ const props = withDefaults(
 	defineProps<{
 		src?: string
 		alt: string
-		size?: "thumbnail" | "detail" | "search"
+		size?: "thumbnail" | "compact" | "detail" | "search"
 	}>(),
 	{ size: "thumbnail" },
 )
@@ -31,7 +31,9 @@ watch(imageUrl, () => {
 				? 'w-full aspect-square rounded-none'
 				: size === 'detail'
 					? 'size-24 sm:size-36'
-					: 'size-16 sm:size-20',
+					: size === 'compact'
+						? 'size-12'
+						: 'size-16 sm:size-20',
 			failed ? 'bg-muted text-muted' : 'bg-white p-2',
 		]"
 	>

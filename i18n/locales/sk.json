@@ -1,4 +1,7 @@
 {
+	"gridDensity": "Hustota mriežky",
+	"comfortableGrid": "Vzdušná",
+	"compactGrid": "Kompaktná",
 	"searchImages": "Hľadať obrázky",
 	"searchImagesHelp": "Vyhľadajte obrázky podľa značky a názvu produktu a výberom vložte URL.",
 	"noImagesFound": "Žiadne obrázky sa nenašli. Skúste inú značku alebo názov produktu.",

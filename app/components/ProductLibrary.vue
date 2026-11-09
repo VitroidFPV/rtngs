@@ -16,6 +16,13 @@ const busy = ref(false)
 const search = ref("")
 const tag = ref<string | 0>(0)
 const sort = ref("Newest")
+const density = useCookie<"comfortable" | "compact">("product-grid-density", {
+	default: () => "comfortable",
+	maxAge: 60 * 60 * 24 * 365,
+	sameSite: "lax",
+})
+const compact = computed(() => density.value === "compact")
+const cardRatingLimit = computed(() => (compact.value ? 3 : 4))
 const selected = ref<Product | null>(null)
 const editing = ref(false)
 const otherRatings = computed(
@@ -175,7 +182,7 @@ function cardRatings(product: Product) {
 					),
 				]
 			: product.ratings
-	).slice(0, 4)
+	).slice(0, cardRatingLimit.value)
 }
 function open(product: Product) {
 	selected.value = product
@@ -239,15 +246,23 @@ async function save() {
 			role="alert"
 		/>
 		<div
-			class="surface-panel grid grid-cols-1 gap-4 p-4 sm:p-5 sm:grid-cols-[1fr_auto_auto]"
+			class="surface-panel grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4 p-4 sm:p-5 md:grid-cols-[minmax(0,1fr)_auto_auto_auto]"
 		>
-			<UFormField :label="t('searchProducts')"
+			<UFormField
+				:label="
+					products
+						? `${t('searchProducts')} (${visible.length})`
+						: t('searchProducts')
+				"
+				class="col-span-full min-w-0 md:col-span-1"
 				><UInput
 					v-model="search"
 					:placeholder="t('nameBrandOrTag')"
 					class="w-full"
 			/></UFormField>
-			<UFormField :label="t('filterByTag')"
+			<UFormField
+				:label="t('filterByTag')"
+				class="col-span-full md:col-span-1"
 				><USelect
 					v-model="tag"
 					:items="tags"
@@ -259,19 +274,36 @@ async function save() {
 					:items="sorts"
 					class="w-full sm:min-w-36"
 			/></UFormField>
+			<div
+				role="group"
+				:aria-label="t('gridDensity')"
+				class="inline-flex justify-self-end gap-1"
+			>
+				<UButton
+					color="neutral"
+					icon="i-lucide-layout-grid"
+					:aria-label="t('comfortableGrid')"
+					:title="t('comfortableGrid')"
+					:variant="compact ? 'ghost' : 'soft'"
+					:aria-pressed="!compact"
+					class="size-11 justify-center md:size-9"
+					@click="density = 'comfortable'"
+				/>
+				<UButton
+					color="neutral"
+					icon="i-lucide-grid-3x3"
+					:aria-label="t('compactGrid')"
+					:title="t('compactGrid')"
+					:variant="compact ? 'soft' : 'ghost'"
+					:aria-pressed="compact"
+					class="size-11 justify-center md:size-9"
+					@click="density = 'compact'"
+				/>
+			</div>
 		</div>
-		<p class="min-h-5 text-sm text-muted" role="status" aria-live="polite">
-			<template v-if="products">
-				{{ t("productCount", visible.length) }}
-				<span v-if="search || tag !== 0">{{
-					t("matchingFilters")
-				}}</span>
-				<span v-else>{{ t("inLibrary") }}</span>
-			</template>
-			<USkeleton v-else class="h-4 w-36" aria-hidden="true" />
-		</p>
 		<ProductGridSkeleton
 			v-if="!products && !error"
+			:compact="compact"
 			role="status"
 			:aria-label="t('loadingProducts')"
 		/>
@@ -302,10 +334,14 @@ async function save() {
 				{{ t("clearFilters") }}
 			</UButton>
 		</div>
-		<div v-if="products" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+		<div
+			v-if="products"
+			class="product-grid"
+			:class="{ 'product-grid-compact': compact }"
+		>
 			<button
 				type="button"
-				class="product-card surface-panel min-h-64 p-5 sm:p-6 flex flex-col items-center justify-center gap-3 border-dashed text-muted hover:text-primary"
+				class="product-card product-card-add surface-panel p-5 sm:p-6 flex flex-col items-center justify-center gap-3 border-dashed text-muted hover:text-primary"
 				@click="edit()"
 			>
 				<UIcon name="i-lucide-plus" class="size-8" aria-hidden="true" />
@@ -314,30 +350,36 @@ async function save() {
 			<button
 				v-for="product in visible"
 				:key="product._id"
-				class="product-card surface-panel min-h-64 group text-left p-5 sm:p-6 flex flex-col gap-4"
+				class="product-card surface-panel group text-left p-5 sm:p-6 flex flex-col gap-4"
 				@click="open(product)"
 			>
-				<div class="flex items-start justify-between gap-3 w-full">
-					<div class="flex items-center gap-3 sm:gap-4 min-w-0">
+				<div
+					class="product-card-header flex items-start justify-between gap-3 w-full"
+				>
+					<div
+						class="product-card-identity flex items-center gap-3 sm:gap-4 min-w-0"
+					>
 						<ProductImage
 							:src="product.imageUrl"
 							:alt="product.name"
+							:size="compact ? 'compact' : 'thumbnail'"
 						/>
 						<div class="min-w-0">
 							<p
 								v-if="product.brand"
-								class="text-sm text-muted mb-1"
+								class="product-card-brand text-sm text-muted mb-1"
 							>
 								{{ product.brand }}
 							</p>
 							<h2
-								class="font-semibold text-lg text-highlighted break-words group-hover:text-primary transition-colors"
+								:title="product.name"
+								class="product-card-name font-semibold text-lg text-highlighted break-words group-hover:text-primary transition-colors"
 							>
 								{{ product.name }}
 							</h2>
 						</div>
 					</div>
-					<div class="shrink-0 text-center">
+					<div class="product-card-score shrink-0 text-center">
 						<p v-if="product.average !== null" class="rating-value">
 							<span class="text-xl font-semibold tabular-nums">{{
 								product.average.toLocaleString(locale, {
@@ -353,7 +395,7 @@ async function save() {
 						>
 							{{ t("unrated") }}
 						</p>
-						<p class="text-xs text-muted mt-1.5">
+						<p class="product-card-count text-xs text-muted mt-1.5">
 							{{ t("ratingCount", product.ratings.length) }}
 						</p>
 					</div>
@@ -366,11 +408,12 @@ async function save() {
 				</p>
 				<div
 					v-if="product.tags.length"
-					class="flex flex-wrap gap-1.5 mt-auto pt-1"
+					class="product-card-tags flex flex-wrap gap-1.5 mt-auto pt-1"
 				>
 					<UBadge
 						v-for="productTag in product.tags"
 						:key="productTag"
+						:title="productTag"
 						color="neutral"
 						variant="soft"
 						size="sm"
@@ -379,7 +422,7 @@ async function save() {
 				</div>
 				<div
 					v-if="product.ratings.length"
-					class="flex flex-wrap items-center gap-4 pt-2 pb-1"
+					class="product-card-ratings flex flex-wrap items-center gap-4 pt-2 pb-1"
 					:aria-label="t('memberRatings')"
 				>
 					<span
@@ -398,7 +441,7 @@ async function save() {
 						<UAvatar
 							:src="rating.image"
 							:alt="rating.name"
-							size="xl"
+							:size="compact ? 'sm' : 'xl'"
 							:class="
 								rating._id === product.mine?._id
 									? 'ring-2 ring-primary ring-offset-2 ring-offset-[var(--app-surface)]'
@@ -413,9 +456,9 @@ async function save() {
 						>
 					</span>
 					<span
-						v-if="product.ratings.length > 4"
+						v-if="product.ratings.length > cardRatingLimit"
 						class="text-xs text-muted"
-						>+{{ product.ratings.length - 4
+						>+{{ product.ratings.length - cardRatingLimit
 						}}<span class="sr-only">
 							{{ t("moreRatingsOpenProductToViewAll") }}
 						</span></span
