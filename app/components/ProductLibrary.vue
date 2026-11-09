@@ -90,6 +90,20 @@ const tags = computed(() => [
 		(value) => ({ label: value, value }),
 	),
 ])
+const brands = computed(() => {
+	const unique = new Map<string, string>()
+	for (const product of products.value ?? []) {
+		const brand = product.brand.trim()
+		if (brand && !unique.has(brand.toLowerCase()))
+			unique.set(brand.toLowerCase(), brand)
+	}
+	return [...unique.values()].sort((a, b) => a.localeCompare(b, locale.value))
+})
+const brandMenuOpen = ref(false)
+function createBrand(brand: string) {
+	form.brand = brand.trim()
+	brandMenuOpen.value = false
+}
 const sorts = computed(() => [
 	{ label: t("newest"), value: "Newest" },
 	{ label: t("topRated"), value: "Top rated" },
@@ -433,12 +447,22 @@ async function save() {
 								maxlength="120"
 								class="w-full"
 						/></UFormField>
-						<UFormField :label="t('brand')"
-							><UInput
-								v-model="form.brand"
-								maxlength="80"
+						<UFormField :label="t('brand')">
+							<UInputMenu
+								v-model:open="brandMenuOpen"
+								:model-value="form.brand"
+								:items="brands"
+								create-item
+								:maxlength="80"
 								class="w-full"
-						/></UFormField>
+								@update:model-value="form.brand = $event ?? ''"
+								@create="createBrand"
+							>
+								<template #create-item-label="{ item }">
+									{{ t("addBrand", { brand: item }) }}
+								</template>
+							</UInputMenu>
+						</UFormField>
 					</div>
 					<UFormField :label="t('description')"
 						><UTextarea

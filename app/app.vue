@@ -2,9 +2,12 @@
 import { en, cs, sk } from "@nuxt/ui/locale"
 const { t, locale, locales, setLocale } = useI18n()
 const uiLocale = computed(() => ({ en, cs, sk })[locale.value])
+
+const isDev = computed(() => process.env.NODE_ENV === "development")
+
 useHead(() => ({
 	htmlAttrs: { lang: locale.value },
-	title: "rtngs",
+	title: `rtngs${isDev.value ? " (dev)" : ""}`,
 	link: [{ rel: "icon", type: "image/svg+xml", href: "/favicon.svg" }],
 	meta: [
 		{

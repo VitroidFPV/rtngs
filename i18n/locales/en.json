@@ -80,6 +80,7 @@
 	"updateTheDetailsSharedWithTheLibrary": "Update the details shared with the library.",
 	"shareAProductForMembersToTryAndReview": "Share a product for members to try and review.",
 	"productName": "Product name",
+	"addBrand": "Add “{brand}”",
 	"brand": "Brand",
 	"description": "Description",
 	"productLink": "Product link",
