@@ -1,4 +1,10 @@
 {
+	"productImageLink": "Product image link",
+	"productImageLinkHelp": "Optional direct link to an image.",
+	"invalidImageLink": "Enter a valid image link.",
+	"imageLinkLength": "Image link must be 0-2000 characters.",
+	"imageUnavailable": "Image unavailable",
+
 	"lightMode": "Light mode",
 	"darkMode": "Dark mode",
 	"loadingLibrary": "Loading library",

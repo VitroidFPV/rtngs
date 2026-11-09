@@ -13,6 +13,7 @@ describe("product validation", () => {
 		expect(productFields(product)).toEqual({
 			...product,
 			name: "Coffee",
+			imageUrl: "",
 			tags: ["coffee", "kitchen"],
 		})
 	})
@@ -21,6 +22,24 @@ describe("product validation", () => {
 		expect(() =>
 			productFields({ ...product, url: "javascript:alert(1)" }),
 		).toThrow()
+	})
+	test("accepts optional image links and trims them", () => {
+		expect(productFields(product).imageUrl).toBe("")
+		expect(
+			productFields({
+				...product,
+				imageUrl: " https://example.com/photo.png ",
+			}).imageUrl,
+		).toBe("https://example.com/photo.png")
+	})
+	test("rejects malformed, unsafe, and oversized image links", () => {
+		for (const imageUrl of [
+			"invalid",
+			"javascript:alert(1)",
+			"data:image/png;base64,abc",
+			"https://example.com/" + "a".repeat(2000),
+		])
+			expect(() => productFields({ ...product, imageUrl })).toThrow()
 	})
 	test("requires a whole-number score within the scale", () => {
 		for (const score of [0, 6, 2.5, NaN])

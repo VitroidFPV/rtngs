@@ -1,4 +1,10 @@
 {
+	"productImageLink": "Odkaz na obrázek produktu",
+	"productImageLinkHelp": "Volitelný přímý odkaz na obrázek.",
+	"invalidImageLink": "Zadejte platný odkaz na obrázek.",
+	"imageLinkLength": "Odkaz na obrázek musí mít 0–2000 znaků.",
+	"imageUnavailable": "Obrázek není dostupný",
+
 	"lightMode": "Světlý režim",
 	"darkMode": "Tmavý režim",
 	"loadingLibrary": "Načítání knihovny",

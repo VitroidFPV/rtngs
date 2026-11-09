@@ -29,6 +29,7 @@ const form = reactive({
 	brand: "",
 	description: "",
 	url: "",
+	imageUrl: "",
 	tags: "",
 })
 const score = ref(3)
@@ -89,12 +90,14 @@ function clearFilters() {
 }
 function edit(product?: Product) {
 	editId.value = product?._id
-	Object.assign(
-		form,
-		product
-			? { ...product, tags: product.tags.join(", ") }
-			: { name: "", brand: "", description: "", url: "", tags: "" },
-	)
+	Object.assign(form, {
+		name: product?.name ?? "",
+		brand: product?.brand ?? "",
+		description: product?.description ?? "",
+		url: product?.url ?? "",
+		imageUrl: product?.imageUrl ?? "",
+		tags: product?.tags.join(", ") ?? "",
+	})
 	selected.value = null
 	editing.value = true
 }
@@ -245,16 +248,25 @@ async function save() {
 				class="product-card surface-panel group text-left p-5 sm:p-6 flex flex-col gap-4"
 				@click="open(product)"
 			>
-				<div class="flex items-start justify-between gap-4 w-full">
-					<div class="min-w-0">
-						<p v-if="product.brand" class="text-sm text-muted mb-1">
-							{{ product.brand }}
-						</p>
-						<h2
-							class="font-semibold text-lg text-highlighted break-words group-hover:text-primary transition-colors"
-						>
-							{{ product.name }}
-						</h2>
+				<div class="flex items-start justify-between gap-3 w-full">
+					<div class="flex items-center gap-3 sm:gap-4 min-w-0">
+						<ProductImage
+							:src="product.imageUrl"
+							:alt="product.name"
+						/>
+						<div class="min-w-0">
+							<p
+								v-if="product.brand"
+								class="text-sm text-muted mb-1"
+							>
+								{{ product.brand }}
+							</p>
+							<h2
+								class="font-semibold text-lg text-highlighted break-words group-hover:text-primary transition-colors"
+							>
+								{{ product.name }}
+							</h2>
+						</div>
 					</div>
 					<div class="shrink-0 text-center">
 						<p v-if="product.average !== null" class="rating-value">
@@ -381,6 +393,19 @@ async function save() {
 							class="w-full"
 					/></UFormField>
 					<div class="border-t border-default pt-5 space-y-5">
+						<UFormField
+							:label="t('productImageLink')"
+							:help="t('productImageLinkHelp')"
+						>
+							<UInput
+								v-model="form.imageUrl"
+								type="url"
+								maxlength="2000"
+								placeholder="https://"
+								class="w-full"
+							/>
+						</UFormField>
+						<ProductImage :src="form.imageUrl" :alt="form.name" />
 						<UFormField :label="t('productLink')"
 							><UInput
 								v-model="form.url"
@@ -444,6 +469,11 @@ async function save() {
 							class="flex flex-wrap items-center justify-between gap-4"
 						>
 							<div class="flex items-center gap-3">
+								<ProductImage
+									:src="selected.imageUrl"
+									:alt="selected.name"
+									size="detail"
+								/>
 								<p
 									v-if="selected.average !== null"
 									class="rating-value"

@@ -1,5 +1,7 @@
 import { productError } from "../utils/product-error"
 const validationKeys: Record<string, string> = {
+	"Enter a valid image link.": "invalidImageLink",
+	"Image link must be 0-2000 characters.": "imageLinkLength",
 	"Enter a valid product link.": "validation0",
 	"Use an http or https link.": "validation1",
 	"Use up to 10 tags.": "validation2",

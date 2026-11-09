@@ -18,6 +18,7 @@ export function productFields(input: {
 	brand: string
 	description: string
 	url: string
+	imageUrl?: string
 	tags: string[]
 }) {
 	const url = text(input.url, "Link", 2000)
@@ -31,12 +32,24 @@ export function productFields(input: {
 		if (!["https:", "http:"].includes(parsed.protocol))
 			throw new ConvexError("Use an http or https link.")
 	}
+	const imageUrl = text(input.imageUrl ?? "", "Image link", 2000)
+	if (imageUrl) {
+		let parsed: URL
+		try {
+			parsed = new URL(imageUrl)
+		} catch {
+			throw new ConvexError("Enter a valid image link.")
+		}
+		if (!["https:", "http:"].includes(parsed.protocol))
+			throw new ConvexError("Use an http or https link.")
+	}
 	if (input.tags.length > 10) throw new ConvexError("Use up to 10 tags.")
 	return {
 		name: text(input.name, "Name", 120, true),
 		brand: text(input.brand, "Brand", 80),
 		description: text(input.description, "Description", 2000),
 		url,
+		imageUrl,
 		tags: [
 			...new Set(
 				input.tags.map((tag) =>

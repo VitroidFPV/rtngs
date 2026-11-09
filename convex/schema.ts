@@ -24,6 +24,7 @@ export default defineSchema({
 		brand: v.string(),
 		description: v.string(),
 		url: v.string(),
+		imageUrl: v.optional(v.string()),
 		tags: v.array(v.string()),
 		createdBy: v.string(),
 	}),
