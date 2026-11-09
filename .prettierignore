@@ -1,0 +1,8 @@
+node_modules/
+.nuxt/
+.output/
+.netlify/
+dist/
+.convex/
+convex/_generated/
+bun.lock

@@ -52,6 +52,10 @@ Other users select **Request access** after signing in. Revoked users must conta
 
 ```sh
 bun test
+bun run lint
+bun run format:check
 bun run typecheck
 bun run build
 ```
+
+Use `bun run lint:fix` to apply ESLint fixes and `bun run format` to format files with Prettier.

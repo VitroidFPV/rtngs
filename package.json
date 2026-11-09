@@ -1,28 +1,35 @@
 {
-  "name": "rtngs",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "nuxt dev --dotenv .env.local --port 3000",
-    "build": "nuxt build --dotenv .env.local",
-    "typecheck": "nuxt typecheck && tsc --noEmit -p convex/tsconfig.json",
-    "postinstall": "nuxt prepare",
-    "convex:dev": "convex dev",
-    "test": "bun test"
-  },
-  "dependencies": {
-    "@convex-dev/better-auth": "0.13.0",
-    "@nuxt/ui": "4.12.0",
-    "better-auth": "1.7.18",
-    "convex": "1.49.0",
-    "nuxt": "4.6.4",
-    "tailwindcss": "^4.1.0",
-    "vue": "^3.5.0"
-  },
-  "devDependencies": {
-    "typescript": "^5.9.0",
-    "vue-tsc": "^3.1.0",
-    "@types/node": "^24.0.0"
-  },
-  "packageManager": "bun@1.4.2"
+	"name": "rtngs",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "nuxt dev --dotenv .env.local --port 3000",
+		"build": "nuxt build --dotenv .env.local",
+		"typecheck": "nuxt typecheck && tsc --noEmit -p convex/tsconfig.json",
+		"postinstall": "nuxt prepare",
+		"convex:dev": "convex dev",
+		"test": "bun test",
+		"lint": "eslint .",
+		"lint:fix": "eslint . --fix",
+		"format": "prettier --write .",
+		"format:check": "prettier --check ."
+	},
+	"dependencies": {
+		"@convex-dev/better-auth": "0.13.0",
+		"@nuxt/ui": "4.12.0",
+		"better-auth": "1.7.18",
+		"convex": "1.49.0",
+		"nuxt": "4.6.4",
+		"tailwindcss": "^4.1.0",
+		"vue": "^3.5.0"
+	},
+	"devDependencies": {
+		"typescript": "^5.9.0",
+		"vue-tsc": "^3.1.0",
+		"@types/node": "^24.0.0",
+		"@nuxt/eslint": "1.17.0",
+		"eslint": "^10.13.0",
+		"prettier": "3.9.10"
+	},
+	"packageManager": "bun@1.4.2"
 }
