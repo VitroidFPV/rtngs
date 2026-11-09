@@ -90,7 +90,7 @@ async function signIn() {
 	await run(async () => {
 		const result = await auth!.signIn.social({
 			provider: "discord",
-			callbackURL: window.location.origin,
+			callbackURL: window.location.origin + window.location.pathname,
 		})
 		if (result.error)
 			throw new Error(result.error.message ?? t("discordSignInFailed"))

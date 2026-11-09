@@ -35,7 +35,7 @@ Open `http://localhost:3000` to match `SITE_URL`. Restart Nuxt after changing `.
 
 ## Membership
 
-`ADMIN_DISCORD_IDS` is a comma-separated list of approvers. They have access automatically and can approve requests, add members by Discord ID, or revoke access through **Manage members**. Enable Discord's Developer Mode to copy user IDs.
+`ADMIN_DISCORD_IDS` is a comma-separated list of approvers. They have access automatically and can approve requests, add members by Discord ID, or revoke access through **Manage members** at `/members`. Enable Discord's Developer Mode to copy user IDs.
 
 Other users select **Request access** after signing in. Revoked users must contact an approver. Optional `MEMBER_DISCORD_IDS` seeds initial access; database membership status takes precedence. Both settings belong in Convex.
 

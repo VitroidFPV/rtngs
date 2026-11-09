@@ -8,7 +8,6 @@ const props = defineProps<{ client: ConvexClient }>()
 const status = ref<FunctionReturnType<typeof api.members.status> | null>(null)
 const error = ref("")
 const busy = ref(false)
-const manage = ref(false)
 const stop = props.client.onUpdate(
 	api.members.status,
 	{},
@@ -48,28 +47,11 @@ async function request() {
 			:aria-label="t('checkingMembership')"
 		/>
 		<template v-if="status">
-			<MemberManager v-if="status.admin && manage" :client="client">
-				<template #actions
-					><UButton
-						color="neutral"
-						variant="outline"
-						@click="manage = false"
-					>
-						{{ t("backToProducts") }}
-					</UButton></template
-				>
-			</MemberManager>
-			<ProductLibrary v-else-if="status.member" :client="client">
-				<template v-if="status.admin" #actions
-					><UButton
-						color="neutral"
-						variant="outline"
-						@click="manage = true"
-					>
-						{{ t("manageMembers") }}
-					</UButton></template
-				>
-			</ProductLibrary>
+			<NuxtPage
+				v-if="status.member"
+				:client="client"
+				:admin="status.admin"
+			/>
 			<div
 				v-else
 				class="surface-panel mx-auto max-w-xl p-6 sm:p-8 space-y-5"

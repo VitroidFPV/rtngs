@@ -21,11 +21,11 @@ const colorMode = useColorMode()
 			<header
 				class="app-header flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-b border-default py-5"
 			>
-				<a
-					href="/"
+				<NuxtLink
+					to="/"
 					class="text-2xl font-semibold tracking-tighter text-highlighted rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
 					:aria-label="t('rtngsHome')"
-					>rtngs<span class="text-primary">.</span></a
+					>rtngs<span class="text-primary">.</span></NuxtLink
 				>
 				<div class="flex items-center gap-2 sm:gap-4 min-w-0">
 					<USelect
