@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "allowJs": true, "strict": true, "target": "ESNext",
+    "module": "ESNext", "moduleResolution": "Bundler",
+    "skipLibCheck": true, "noEmit": true, "lib": ["ES2023", "DOM"],
+    "types": ["node"]
+  },
+  "include": ["./**/*"]
+}
