@@ -92,12 +92,23 @@ onBeforeUnmount(() => {
     <UAlert v-if="error" title="Account error" :description="error" color="error" role="alert" class="mb-6" />
     <div v-if="pending" class="space-y-4" role="status" aria-label="Checking your session"><USkeleton class="h-10 w-48" /><USkeleton class="h-40 w-full" /></div>
     <template v-else-if="user">
-      <div class="flex items-center justify-end gap-3 mb-12"><UAvatar :src="user.image ?? undefined" :alt="user.name" size="xs" /><span class="text-sm">{{ user.name }}</span><UButton color="neutral" variant="ghost" :loading="busy" @click="signOut">Sign out</UButton></div>
+      <Teleport to="#account-actions">
+        <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+          <UAvatar :src="user.image ?? undefined" :alt="user.name" size="xs" />
+          <span class="hidden sm:block max-w-36 truncate text-sm font-medium">{{ user.name }}</span>
+          <UButton color="neutral" variant="ghost" size="sm" :loading="busy" @click="signOut">Sign out</UButton>
+        </div>
+      </Teleport>
       <MemberAccess v-if="authenticated && client" :client="client" />
       <USkeleton v-else class="h-48 w-full" aria-label="Connecting to library" />
     </template>
-    <section v-else class="py-16 sm:py-24 max-w-xl">
-      <UButton size="lg" :loading="busy" @click="signIn">Continue with Discord</UButton>
+    <section v-else class="surface-panel mx-auto max-w-xl p-6 sm:p-10 my-6 sm:my-12">
+      <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-highlighted leading-tight">Good products.<br>Honest opinions.</h1>
+      <p class="mt-4 max-w-sm text-muted leading-relaxed">A private library of products, ratings, and reviews from people you know.</p>
+      <div class="mt-8 border-t border-default pt-6">
+        <UButton size="lg" :loading="busy" @click="signIn">Continue with Discord</UButton>
+        <p class="mt-3 text-sm text-muted leading-relaxed">Sign in to join the library. New members can request access.</p>
+      </div>
     </section>
   </template>
 </template>

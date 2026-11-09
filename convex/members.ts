@@ -2,6 +2,8 @@ import { ConvexError, v } from 'convex/values'
 import { query, mutation } from './_generated/server'
 import { access, admin } from './lib/access'
 import { isMember } from './lib/membership'
+import { components } from './_generated/api'
+import { authComponent } from './auth'
 
 export const status = query({ args: {}, handler: async ctx => {
   const result = await access(ctx)
@@ -14,8 +16,17 @@ export const requestAccess = mutation({ args: {}, handler: async ctx => {
 } })
 export const list = query({ args: {}, handler: async ctx => {
   await admin(ctx)
-  return (await ctx.db.query('members').order('desc').collect()).map(record => ({
-    ...record, isAdmin: isMember(record.discordId, process.env.ADMIN_DISCORD_IDS),
+  const records = await ctx.db.query('members').order('desc').collect()
+  return Promise.all(records.map(async record => {
+    const linked = await ctx.runQuery(components.betterAuth.adapter.findOne, {
+      model: 'account', where: [
+        { field: 'accountId', operator: 'eq', value: record.discordId },
+        { field: 'providerId', operator: 'eq', value: 'discord' },
+      ],
+    })
+    const profile = linked ? await authComponent.getAnyUserById(ctx, linked.userId) : null
+    return { ...record, name: profile?.name ?? record.name, image: profile?.image ?? undefined,
+      isAdmin: isMember(record.discordId, process.env.ADMIN_DISCORD_IDS) }
   }))
 } })
 export const decide = mutation({ args: { discordId: v.string(), approve: v.boolean() }, handler: async (ctx, args) => {

@@ -23,8 +23,10 @@ function setup() {
     auth: { getUserIdentity: async () => actor ? { subject: `user:${actor}`, sessionId: 'session' } : null },
     runQuery: async (_ref: unknown, args: any) => {
       if (args.model === 'session') return { expiresAt: Date.now() + 60000 }
-      if (args.model === 'user') return { _id: `user:${actor}`, name: 'Member' }
+      if (args.model === 'user') return { _id: `user:${actor}`, name: 'Member', image: 'https://cdn.discordapp.com/avatars/example.png' }
       if (args.model === 'account') {
+        const lookup = args.where.find((condition: any) => condition.field === 'accountId')
+        if (lookup) return { accountId: lookup.value, userId: `user:${lookup.value}` }
         expect(args.where).toContainEqual({ field: 'userId', operator: 'eq', value: `user:${actor}` })
         expect(args.where).toContainEqual({ field: 'providerId', operator: 'eq', value: 'discord' })
         return { accountId: actor }
@@ -93,6 +95,7 @@ test('direct membership decisions are idempotent and reject malformed IDs', asyn
   expect(app.rows.members).toHaveLength(1)
   expect(app.rows.membershipEvents).toHaveLength(1)
   const [row] = await handler(list)(app.ctx, {})
+  expect(row.image).toBe('https://cdn.discordapp.com/avatars/example.png')
   expect(row.approvedBy).toBe(adminId)
   expect(typeof row.approvedAt).toBe('number')
 })

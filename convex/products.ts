@@ -2,12 +2,19 @@ import { ConvexError, v } from 'convex/values'
 import { query, mutation } from './_generated/server'
 import { productFields, ratingFields } from './lib/validation'
 import { member } from './lib/access'
+import { authComponent } from './auth'
 
 export const list = query({ args: {}, handler: async ctx => {
   const user = await member(ctx)
+  const avatars = new Map<string, Promise<string | undefined>>()
+  function avatar(userId: string) {
+    if (!avatars.has(userId)) avatars.set(userId, authComponent.getAnyUserById(ctx, userId).then(profile => profile?.image ?? undefined))
+    return avatars.get(userId)!
+  }
   const products = await ctx.db.query('products').order('desc').collect()
   return Promise.all(products.map(async product => {
-    const ratings = await ctx.db.query('ratings').withIndex('by_product', q => q.eq('productId', product._id)).collect()
+    const records = await ctx.db.query('ratings').withIndex('by_product', q => q.eq('productId', product._id)).collect()
+    const ratings = await Promise.all(records.map(async rating => ({ ...rating, image: await avatar(rating.userId) })))
     return { ...product, canEdit: product.createdBy === user._id, ratings, mine: ratings.find(r => r.userId === user._id) ?? null,
       average: ratings.length ? ratings.reduce((sum, r) => sum + r.score, 0) / ratings.length : null }
   }))

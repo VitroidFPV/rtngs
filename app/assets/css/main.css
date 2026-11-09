@@ -1,14 +1,121 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
-@theme { --font-sans: 'Raleway', sans-serif; --font-mono: 'Geist Mono', monospace; }
-:root { --ui-radius: 0.5rem; }
-:root, .light {
-  --ui-bg-muted: var(--ui-color-neutral-100); --ui-bg-elevated: var(--ui-color-neutral-100); --ui-bg-accented: var(--ui-color-neutral-200);
-  --ui-text: var(--ui-color-neutral-900); --ui-text-highlighted: var(--ui-color-neutral-950); --ui-bg: var(--ui-color-neutral-50); --ui-text-inverted: var(--ui-color-neutral-50);
+
+@theme {
+  --font-sans: 'Raleway', sans-serif;
+  --font-mono: 'Geist Mono', monospace;
 }
+
+/* Controls use 8px corners; content surfaces and dialogs use 12px. */
+:root {
+  --ui-radius: 0.5rem;
+}
+
+:root, .light {
+  --ui-primary: var(--ui-color-primary-700);
+  --ui-bg: var(--ui-color-neutral-50);
+  --ui-bg-muted: var(--ui-color-neutral-100);
+  --ui-bg-elevated: var(--ui-color-neutral-100);
+  --ui-bg-accented: var(--ui-color-neutral-200);
+  --ui-text: var(--ui-color-neutral-900);
+  --ui-text-highlighted: var(--ui-color-neutral-950);
+  --ui-text-muted: var(--ui-color-neutral-600);
+  --ui-text-dimmed: var(--ui-color-neutral-600);
+  --ui-text-inverted: var(--ui-color-neutral-50);
+  --app-surface: #fff;
+}
+
 .dark {
-  --ui-bg: var(--ui-color-neutral-950); --ui-bg-muted: var(--ui-color-neutral-900); --ui-bg-elevated: var(--ui-color-neutral-900); --ui-bg-accented: var(--ui-color-neutral-800);
-  --ui-text: var(--ui-color-neutral-100); --ui-text-highlighted: var(--ui-color-neutral-50); --ui-bg-inverted: var(--ui-color-neutral-50); --ui-border-inverted: var(--ui-color-neutral-50); --ui-text-inverted: var(--ui-color-neutral-900);
+  --ui-primary: var(--ui-color-primary-300);
+  --ui-bg: var(--ui-color-neutral-950);
+  --ui-bg-muted: var(--ui-color-neutral-900);
+  --ui-bg-elevated: var(--ui-color-neutral-900);
+  --ui-bg-accented: var(--ui-color-neutral-800);
+  --ui-text: var(--ui-color-neutral-100);
+  --ui-text-highlighted: var(--ui-color-neutral-50);
+  --ui-text-muted: var(--ui-color-neutral-400);
+  --ui-text-dimmed: var(--ui-color-neutral-400);
+  --ui-bg-inverted: var(--ui-color-neutral-50);
+  --ui-border-inverted: var(--ui-color-neutral-50);
+  --ui-text-inverted: var(--ui-color-neutral-900);
+  --app-surface: var(--ui-color-neutral-900);
+}
+
+body {
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app-header { min-height: 76px; }
+.surface-panel {
+  background: var(--app-surface);
+  border: 1px solid var(--ui-border);
+  border-radius: 0.75rem;
+}
+.section-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+}
+.section-title {
+  color: var(--ui-text-highlighted);
+  font-size: clamp(1.75rem, 4vw, 2.25rem);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.2;
+}
+.section-description {
+  margin-top: 0.5rem;
+  max-width: 60ch;
+  color: var(--ui-text-muted);
+  font-size: 0.875rem;
+}
+.section-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+.product-card { min-width: 0; }
+.product-card:hover { border-color: var(--ui-primary); }
+.product-card:focus-visible {
+  outline: 2px solid var(--ui-primary);
+  outline-offset: 3px;
+}
+.rating-value {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.5rem;
+  background: var(--ui-color-primary-50);
+  color: var(--ui-color-primary-800);
+}
+.dark .rating-value {
+  background: var(--ui-color-primary-950);
+  color: var(--ui-color-primary-200);
+}
+.empty-state {
+  border: 1px dashed var(--ui-border-accented);
+  border-radius: 0.75rem;
+  padding: 4rem 1.5rem;
+  text-align: center;
 }
 button { cursor: pointer; }
-button:active { transform: scale(.98); }
+button:disabled { cursor: not-allowed; }
+button:enabled:active { transform: scale(.98); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .product-card { transition: border-color 150ms ease; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  button:enabled:active { transform: none; }
+}
+@media (max-width: 639px) {
+  .section-actions { width: 100%; }
+  .app-header { min-height: 68px; }
+}
