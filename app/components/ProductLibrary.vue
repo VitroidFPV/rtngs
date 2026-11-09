@@ -74,6 +74,10 @@ const stop = props.client.onUpdate(
 	},
 )
 onBeforeUnmount(stop)
+function clearFilters() {
+	search.value = ""
+	tag.value = "All tags"
+}
 function edit(product?: Product) {
 	editId.value = product?._id
 	Object.assign(
@@ -222,10 +226,7 @@ async function save() {
 				class="mt-5"
 				color="neutral"
 				variant="outline"
-				@click="
-					search = ''
-					tag = 'All tags'
-				"
+				@click="clearFilters"
 				>Clear filters</UButton
 			>
 		</div>
