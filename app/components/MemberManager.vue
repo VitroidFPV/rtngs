@@ -2,7 +2,8 @@
 import type { ConvexClient } from "convex/browser"
 import type { FunctionReturnType } from "convex/server"
 import { api } from "../../convex/_generated/api"
-import { productError } from "../utils/product-error"
+const { t, locale } = useI18n()
+const localizedError = useLocalizedError()
 const props = defineProps<{ client: ConvexClient }>()
 const members = ref<FunctionReturnType<typeof api.members.list> | null>(null)
 const error = ref("")
@@ -21,7 +22,7 @@ const stop = props.client.onUpdate(
 	},
 	(cause) => {
 		members.value = null
-		error.value = productError(cause).message
+		error.value = localizedError(cause)
 	},
 )
 onBeforeUnmount(stop)
@@ -36,7 +37,7 @@ async function decide(id: string, approve: boolean) {
 		discordId.value = ""
 		confirming.value = null
 	} catch (cause) {
-		error.value = productError(cause).message
+		error.value = localizedError(cause)
 	} finally {
 		busy.value = false
 	}
@@ -46,16 +47,16 @@ async function decide(id: string, approve: boolean) {
 	<section class="space-y-6">
 		<div class="section-header">
 			<div>
-				<h1 class="section-title">Members</h1>
+				<h1 class="section-title">{{ t("members") }}</h1>
 				<p class="section-description">
-					Manage who can browse, add products, and share ratings.
+					{{ t("manageWhoCanBrowseAddProductsAndShareRatings") }}
 				</p>
 			</div>
 			<div class="section-actions"><slot name="actions" /></div>
 		</div>
 		<UAlert
 			v-if="error"
-			title="Could not manage members"
+			:title="t('couldNotManageMembers')"
 			:description="error"
 			color="error"
 			role="alert"
@@ -66,8 +67,8 @@ async function decide(id: string, approve: boolean) {
 		>
 			<UFormField
 				class="w-full sm:w-auto"
-				label="Discord user ID"
-				help="Approve someone directly by their Discord ID."
+				:label="t('discordUserId')"
+				:help="t('approveSomeoneDirectlyByTheirDiscordId')"
 				><UInput
 					v-model="discordId"
 					required
@@ -75,26 +76,29 @@ async function decide(id: string, approve: boolean) {
 					inputmode="numeric"
 					class="w-full sm:w-64"
 			/></UFormField>
-			<UButton type="submit" :loading="busy">Approve</UButton>
+			<UButton type="submit" :loading="busy">
+				{{ t("approve") }}
+			</UButton>
 			<UButton
 				color="neutral"
 				variant="outline"
 				:disabled="busy || !/^[0-9]{17,20}$/.test(discordId.trim())"
 				@click="confirming = discordId.trim()"
-				>Revoke</UButton
 			>
+				{{ t("revoke") }}
+			</UButton>
 		</form>
 		<USkeleton
 			v-if="!members && !error"
 			class="h-40 w-full"
-			aria-label="Loading members"
+			:aria-label="t('loadingMembers')"
 		/>
 		<p
 			v-else-if="members?.length === 0"
 			class="empty-state text-muted"
 			role="status"
 		>
-			No access requests or approvals yet.
+			{{ t("noAccessRequestsOrApprovalsYet") }}
 		</p>
 		<div
 			v-for="member in members"
@@ -109,13 +113,17 @@ async function decide(id: string, approve: boolean) {
 						{{ member.discordId }}
 					</p>
 					<UBadge color="neutral" variant="subtle">{{
-						member.isAdmin ? "Approver" : member.status
+						member.isAdmin ? t("approver") : t(member.status)
 					}}</UBadge>
 					<p v-if="member.approvedBy" class="text-xs text-muted">
-						Approved by
-						<span class="font-mono">{{ member.approvedBy }}</span>
-						on
-						{{ new Date(member.approvedAt!).toLocaleDateString() }}
+						{{
+							t("approvedBy", {
+								name: member.approvedBy,
+								date: new Date(
+									member.approvedAt!,
+								).toLocaleDateString(locale),
+							})
+						}}
 					</p>
 				</div>
 			</div>
@@ -124,8 +132,9 @@ async function decide(id: string, approve: boolean) {
 					v-if="member.status !== 'approved'"
 					:disabled="busy"
 					@click="decide(member.discordId, true)"
-					>Approve</UButton
 				>
+					{{ t("approve") }}
+				</UButton>
 				<UButton
 					v-if="member.status !== 'revoked'"
 					color="neutral"
@@ -133,15 +142,15 @@ async function decide(id: string, approve: boolean) {
 					:disabled="busy"
 					@click="confirming = member.discordId"
 					>{{
-						member.status === "pending" ? "Decline" : "Revoke"
+						member.status === "pending" ? t("decline") : t("revoke")
 					}}</UButton
 				>
 			</div>
 		</div>
 		<UModal
 			:open="Boolean(confirming)"
-			title="Revoke access?"
-			description="This account will lose access to the product library."
+			:title="t('confirmRevokeAccess')"
+			:description="t('thisAccountWillLoseAccessToTheProductLibrary')"
 			@update:open="
 				(value) => {
 					if (!value) confirming = null
@@ -177,14 +186,16 @@ async function decide(id: string, approve: boolean) {
 					variant="ghost"
 					:disabled="busy"
 					@click="confirming = null"
-					>Cancel</UButton
 				>
+					{{ t("cancel") }}
+				</UButton>
 				<UButton
 					color="error"
 					:loading="busy"
 					@click="decide(confirming!, false)"
-					>Revoke access</UButton
 				>
+					{{ t("revokeAccess") }}
+				</UButton>
 			</template>
 		</UModal>
 	</section>

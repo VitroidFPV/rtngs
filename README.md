@@ -48,6 +48,10 @@ Other users select **Request access** after signing in. Revoked users must conta
 - Add the production `<CONVEX_SITE_URL>/api/auth/callback/discord` redirect to Discord alongside development's. `SITE_URL` must match the frontend origin exactly, without a trailing slash.
 - Production data and membership approvals are separate from development. Deploy previews have no dedicated backend or auth origin.
 
+## Localization
+
+Nuxt i18n provides English (default), Czech, and Slovak. The header language selector saves the choice in a cookie; first visits use the browser language when supported. URLs stay unchanged. Translation files live in `i18n/locales/`, with Czech and Slovak plural rules in `i18n/i18n.config.ts`.
+
 ## Checks
 
 ```sh

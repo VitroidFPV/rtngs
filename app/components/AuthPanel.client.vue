@@ -7,6 +7,7 @@ import {
 import { ConvexClient } from "convex/browser"
 import { completeAuthRedirect } from "../utils/auth-redirect"
 
+const { t } = useI18n()
 const config = useRuntimeConfig()
 const configured = Boolean(
 	config.public.convexUrl && config.public.convexSiteUrl,
@@ -34,7 +35,7 @@ watch(
 	() => session?.value.error,
 	(cause) => {
 		if (cause)
-			error.value = cause.message || "Could not load the Discord session."
+			error.value = cause.message || t("couldNotLoadTheDiscordSession")
 	},
 )
 const client = configured ? new ConvexClient(config.public.convexUrl) : null
@@ -50,14 +51,14 @@ watch(
 					if (result.error)
 						throw new Error(
 							result.error.message ??
-								"Could not obtain a Convex token.",
+								t("couldNotObtainAConvexToken"),
 						)
 					return result.data?.token ?? null
 				} catch (cause) {
 					error.value =
 						cause instanceof Error
 							? cause.message
-							: "Could not obtain a Convex token."
+							: t("couldNotObtainAConvexToken")
 					return null
 				}
 			}, onAuthenticationChange)
@@ -69,8 +70,7 @@ watch(
 function onAuthenticationChange(isAuthenticated: boolean) {
 	authenticated.value = isAuthenticated
 	if (!isAuthenticated && user.value && !error.value) {
-		error.value =
-			"Could not authenticate with Convex. Please sign in again."
+		error.value = t("couldNotAuthenticateWithConvexPleaseSignInAgain")
 	}
 }
 
@@ -93,7 +93,7 @@ async function signIn() {
 			callbackURL: window.location.origin,
 		})
 		if (result.error)
-			throw new Error(result.error.message ?? "Discord sign-in failed.")
+			throw new Error(result.error.message ?? t("discordSignInFailed"))
 	})
 }
 
@@ -101,7 +101,7 @@ async function signOut() {
 	await run(async () => {
 		const result = await auth!.signOut()
 		if (result.error)
-			throw new Error(result.error.message ?? "Sign-out failed.")
+			throw new Error(result.error.message ?? t("signOutFailed"))
 		client?.setAuth(async () => null, onAuthenticationChange)
 	})
 }
@@ -127,14 +127,16 @@ onBeforeUnmount(() => {
 <template>
 	<UAlert
 		v-if="!configured"
-		title="Connect a Convex deployment"
-		description="Set CONVEX_URL and CONVEX_SITE_URL in .env.local, then restart Nuxt."
+		:title="t('connectAConvexDeployment')"
+		:description="
+			t('setConvexUrlAndConvexSiteUrlInEnvLocalThenRestartNuxt')
+		"
 		color="warning"
 	/>
 	<template v-else>
 		<UAlert
 			v-if="error"
-			title="Account error"
+			:title="t('accountError')"
 			:description="error"
 			color="error"
 			role="alert"
@@ -144,7 +146,7 @@ onBeforeUnmount(() => {
 			v-if="pending"
 			class="space-y-4"
 			role="status"
-			aria-label="Checking your session"
+			:aria-label="t('checkingYourSession')"
 		>
 			<USkeleton class="h-10 w-48" /><USkeleton class="h-40 w-full" />
 		</div>
@@ -166,15 +168,16 @@ onBeforeUnmount(() => {
 						size="sm"
 						:loading="busy"
 						@click="signOut"
-						>Sign out</UButton
 					>
+						{{ t("signOut") }}
+					</UButton>
 				</div>
 			</Teleport>
 			<MemberAccess v-if="authenticated && client" :client="client" />
 			<USkeleton
 				v-else
 				class="h-48 w-full"
-				aria-label="Connecting to library"
+				:aria-label="t('connectingToLibrary')"
 			/>
 		</template>
 		<section
@@ -184,18 +187,22 @@ onBeforeUnmount(() => {
 			<h1
 				class="text-3xl sm:text-4xl font-semibold tracking-tight text-highlighted leading-tight"
 			>
-				Good products.<br />Honest opinions.
+				{{ t("goodProducts") }} <br />
+				{{ t("honestOpinions") }}
 			</h1>
 			<p class="mt-4 max-w-sm text-muted leading-relaxed">
-				A private library of products, ratings, and reviews from people
-				you know.
+				{{
+					t(
+						"aPrivateLibraryOfProductsRatingsAndReviewsFromPeopleYouKnow",
+					)
+				}}
 			</p>
 			<div class="mt-8 border-t border-default pt-6">
-				<UButton size="lg" :loading="busy" @click="signIn"
-					>Continue with Discord</UButton
-				>
+				<UButton size="lg" :loading="busy" @click="signIn">
+					{{ t("continueWithDiscord") }}
+				</UButton>
 				<p class="mt-3 text-sm text-muted leading-relaxed">
-					Sign in to join the library. New members can request access.
+					{{ t("signInToJoinTheLibraryNewMembersCanRequestAccess") }}
 				</p>
 			</div>
 		</section>

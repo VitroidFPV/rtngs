@@ -4,6 +4,8 @@ import type { ConvexClient } from "convex/browser"
 import type { FunctionReturnType } from "convex/server"
 import { api } from "../../convex/_generated/api"
 import type { Id } from "../../convex/_generated/dataModel"
+const { t, locale } = useI18n()
+const localizedError = useLocalizedError()
 const props = defineProps<{ client: ConvexClient }>()
 type Product = FunctionReturnType<typeof api.products.list>[number]
 const products = ref<Product[] | null>(null)
@@ -11,7 +13,7 @@ const error = ref("")
 const denied = ref(false)
 const busy = ref(false)
 const search = ref("")
-const tag = ref("All tags")
+const tag = ref<string | 0>(0)
 const sort = ref("Newest")
 const selected = ref<Product | null>(null)
 const editing = ref(false)
@@ -32,8 +34,15 @@ const form = reactive({
 const score = ref(3)
 const note = ref("")
 const tags = computed(() => [
-	"All tags",
-	...new Set(products.value?.flatMap((p) => p.tags) ?? []),
+	{ label: t("allTags"), value: 0 },
+	...[...new Set(products.value?.flatMap((p) => p.tags) ?? [])].map(
+		(value) => ({ label: value, value }),
+	),
+])
+const sorts = computed(() => [
+	{ label: t("newest"), value: "Newest" },
+	{ label: t("topRated"), value: "Top rated" },
+	{ label: t("name"), value: "Name" },
 ])
 const visible = computed(() => {
 	const needle = search.value.trim().toLowerCase()
@@ -43,13 +52,13 @@ const visible = computed(() => {
 				`${p.name} ${p.brand} ${p.tags.join(" ")}`
 					.toLowerCase()
 					.includes(needle) &&
-				(tag.value === "All tags" || p.tags.includes(tag.value)),
+				(tag.value === 0 || p.tags.includes(tag.value)),
 		)
 		.sort((a, b) =>
 			sort.value === "Top rated"
 				? (b.average ?? -1) - (a.average ?? -1)
 				: sort.value === "Name"
-					? a.name.localeCompare(b.name)
+					? a.name.localeCompare(b.name, locale.value)
 					: b._creationTime - a._creationTime,
 		)
 })
@@ -67,7 +76,7 @@ const stop = props.client.onUpdate(
 	(cause) => {
 		const failure = productError(cause)
 		denied.value = failure.denied
-		error.value = failure.message
+		error.value = localizedError(cause)
 		products.value = null
 		selected.value = null
 		editing.value = false
@@ -76,7 +85,7 @@ const stop = props.client.onUpdate(
 onBeforeUnmount(stop)
 function clearFilters() {
 	search.value = ""
-	tag.value = "All tags"
+	tag.value = 0
 }
 function edit(product?: Product) {
 	editId.value = product?._id
@@ -112,7 +121,7 @@ async function run(action: () => Promise<unknown>) {
 	try {
 		await action()
 	} catch (cause) {
-		error.value = productError(cause).message
+		error.value = localizedError(cause)
 	} finally {
 		busy.value = false
 	}
@@ -135,7 +144,7 @@ async function save() {
 <template>
 	<UAlert
 		v-if="denied"
-		title="Members only"
+		:title="t('membersOnly')"
 		:description="error"
 		color="neutral"
 		variant="subtle"
@@ -144,22 +153,20 @@ async function save() {
 	<section v-else class="space-y-8">
 		<!-- <div class="section-header">
 			<div>
-				<h1 class="section-title">Products</h1>
-				<p class="section-description">
-					Find something worth trying. Share what you think.
-				</p>
+				<h1 class="section-title"> {{ t("products") }} </h1>
+				<p class="section-description"> {{ t("findSomethingWorthTryingShareWhatYouThink") }} </p>
 			</div>
 			<div class="section-actions">
 				<slot name="actions" /><UButton
 					:disabled="!products"
 					@click="edit()"
-					>Add product</UButton
+					> {{ t("addProduct") }} </UButton
 				>
 			</div>
 		</div> -->
 		<UAlert
 			v-if="error"
-			title="Could not complete request"
+			:title="t('couldNotCompleteRequest')"
 			:description="error"
 			color="error"
 			role="alert"
@@ -167,22 +174,22 @@ async function save() {
 		<div
 			class="surface-panel grid grid-cols-1 gap-4 p-4 sm:p-5 sm:grid-cols-[1fr_auto_auto]"
 		>
-			<UFormField label="Search products"
+			<UFormField :label="t('searchProducts')"
 				><UInput
 					v-model="search"
-					placeholder="Name, brand, or tag"
+					:placeholder="t('nameBrandOrTag')"
 					class="w-full"
 			/></UFormField>
-			<UFormField label="Filter by tag"
+			<UFormField :label="t('filterByTag')"
 				><USelect
 					v-model="tag"
 					:items="tags"
 					class="w-full sm:min-w-40"
 			/></UFormField>
-			<UFormField label="Sort by"
+			<UFormField :label="t('sortBy')"
 				><USelect
 					v-model="sort"
-					:items="['Newest', 'Top rated', 'Name']"
+					:items="sorts"
 					class="w-full sm:min-w-36"
 			/></UFormField>
 		</div>
@@ -192,17 +199,15 @@ async function save() {
 			role="status"
 			aria-live="polite"
 		>
-			{{ visible.length }}
-			{{ visible.length === 1 ? "product" : "products"
-			}}<span v-if="search || tag !== 'All tags'">
-				matching your filters</span
-			><span v-else> in the library</span>
+			{{ t("productCount", visible.length) }}
+			<span v-if="search || tag !== 0">{{ t("matchingFilters") }}</span>
+			<span v-else>{{ t("inLibrary") }}</span>
 		</p>
 		<div
 			v-if="!products && !error"
 			class="grid gap-5 sm:grid-cols-2"
 			role="status"
-			aria-label="Loading products"
+			:aria-label="t('loadingProducts')"
 		>
 			<USkeleton v-for="i in 4" :key="i" class="h-52 rounded-xl" />
 		</div>
@@ -212,13 +217,15 @@ async function save() {
 			role="status"
 		>
 			<h2 class="text-xl font-semibold">
-				{{ products.length ? "No products found" : "No products yet" }}
+				{{
+					products.length ? t("noProductsFound") : t("noProductsYet")
+				}}
 			</h2>
 			<p class="mt-2 text-muted">
 				{{
 					products.length
-						? "Try another search or tag."
-						: "Add a product to get started."
+						? t("tryAnotherSearchOrTag")
+						: t("addAProductToGetStarted")
 				}}
 			</p>
 			<UButton
@@ -227,8 +234,9 @@ async function save() {
 				color="neutral"
 				variant="outline"
 				@click="clearFilters"
-				>Clear filters</UButton
 			>
+				{{ t("clearFilters") }}
+			</UButton>
 		</div>
 		<div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 			<button
@@ -251,7 +259,10 @@ async function save() {
 					<div class="shrink-0 text-center">
 						<p v-if="product.average !== null" class="rating-value">
 							<span class="text-xl font-semibold tabular-nums">{{
-								product.average.toFixed(1)
+								product.average.toLocaleString(locale, {
+									minimumFractionDigits: 1,
+									maximumFractionDigits: 1,
+								})
 							}}</span
 							><span class="text-xs">/ 5</span>
 						</p>
@@ -259,15 +270,10 @@ async function save() {
 							v-else
 							class="rounded-md bg-muted px-3 py-2 text-xs text-muted"
 						>
-							Unrated
+							{{ t("unrated") }}
 						</p>
 						<p class="text-xs text-muted mt-1.5">
-							{{ product.ratings.length }}
-							{{
-								product.ratings.length === 1
-									? "rating"
-									: "ratings"
-							}}
+							{{ t("ratingCount", product.ratings.length) }}
 						</p>
 					</div>
 				</div>
@@ -282,29 +288,29 @@ async function save() {
 					class="flex flex-wrap gap-1.5 mt-auto pt-1"
 				>
 					<UBadge
-						v-for="t in product.tags"
-						:key="t"
+						v-for="productTag in product.tags"
+						:key="productTag"
 						color="neutral"
 						variant="soft"
 						size="sm"
-						>{{ t }}</UBadge
+						>{{ productTag }}</UBadge
 					>
 				</div>
 				<div
 					v-if="product.ratings.length"
 					class="flex flex-wrap items-center gap-4 pt-2 pb-1"
-					aria-label="Member ratings"
+					:aria-label="t('memberRatings')"
 				>
 					<span
 						v-for="rating in cardRatings(product)"
 						:key="rating._id"
 						class="relative inline-flex shrink-0"
-						:title="`${rating._id === product.mine?._id ? 'You' : rating.name}: ${rating.score}/5`"
+						:title="`${rating._id === product.mine?._id ? t('you') : rating.name}: ${rating.score}/5`"
 					>
 						<span class="sr-only"
 							>{{
 								rating._id === product.mine?._id
-									? "You"
+									? t("you")
 									: rating.name
 							}}: {{ rating.score }}/5</span
 						>
@@ -330,19 +336,19 @@ async function save() {
 						class="text-xs text-muted"
 						>+{{ product.ratings.length - 4
 						}}<span class="sr-only">
-							more ratings. Open product to view all.</span
-						></span
+							{{ t("moreRatingsOpenProductToViewAll") }}
+						</span></span
 					>
 				</div>
 			</button>
 		</div>
 		<UModal
 			v-model:open="editing"
-			:title="editId ? 'Edit product' : 'Add product'"
+			:title="editId ? t('editProduct') : t('addProduct')"
 			:description="
 				editId
-					? 'Update the details shared with the library.'
-					: 'Share a product for members to try and review.'
+					? t('updateTheDetailsSharedWithTheLibrary')
+					: t('shareAProductForMembersToTryAndReview')
 			"
 			:ui="{ content: 'max-w-xl' }"
 		>
@@ -353,21 +359,21 @@ async function save() {
 					@submit.prevent="save"
 				>
 					<div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-						<UFormField label="Product name" required
+						<UFormField :label="t('productName')" required
 							><UInput
 								v-model="form.name"
 								required
 								maxlength="120"
 								class="w-full"
 						/></UFormField>
-						<UFormField label="Brand"
+						<UFormField :label="t('brand')"
 							><UInput
 								v-model="form.brand"
 								maxlength="80"
 								class="w-full"
 						/></UFormField>
 					</div>
-					<UFormField label="Description"
+					<UFormField :label="t('description')"
 						><UTextarea
 							v-model="form.description"
 							:rows="4"
@@ -375,7 +381,7 @@ async function save() {
 							class="w-full"
 					/></UFormField>
 					<div class="border-t border-default pt-5 space-y-5">
-						<UFormField label="Product link"
+						<UFormField :label="t('productLink')"
 							><UInput
 								v-model="form.url"
 								type="url"
@@ -384,17 +390,21 @@ async function save() {
 								class="w-full"
 						/></UFormField>
 						<UFormField
-							label="Tags"
-							help="Separate tags with commas. Up to 10 tags, 32 characters each."
+							:label="t('tags')"
+							:help="
+								t(
+									'separateTagsWithCommasUpTo10Tags32CharactersEach',
+								)
+							"
 							><UInput
 								v-model="form.tags"
 								class="w-full"
-								placeholder="coffee, kitchen"
+								:placeholder="t('coffeeKitchen')"
 						/></UFormField>
 					</div>
 					<UAlert
 						v-if="error"
-						title="Could not save product"
+						:title="t('couldNotSaveProduct')"
 						:description="error"
 						color="error"
 						variant="soft"
@@ -408,17 +418,18 @@ async function save() {
 					variant="ghost"
 					:disabled="busy"
 					@click="editing = false"
-					>Cancel</UButton
 				>
-				<UButton type="submit" form="product-form" :loading="busy"
-					>Save product</UButton
-				>
+					{{ t("cancel") }}
+				</UButton>
+				<UButton type="submit" form="product-form" :loading="busy">
+					{{ t("saveProduct") }}
+				</UButton>
 			</template>
 		</UModal>
 		<UModal
 			:open="Boolean(selected)"
 			:title="selected?.name"
-			:description="selected?.brand || 'Product details and ratings'"
+			:description="selected?.brand || t('productDetailsAndRatings')"
 			:ui="{ content: 'max-w-3xl', body: 'p-0 sm:p-0' }"
 			@update:open="
 				(value) => {
@@ -436,31 +447,38 @@ async function save() {
 								<p
 									v-if="selected.average !== null"
 									class="rating-value"
-									aria-label="Average rating"
+									:aria-label="t('averageRating')"
 								>
 									<span
 										class="text-2xl font-semibold tabular-nums"
-										>{{ selected.average.toFixed(1) }}</span
+										>{{
+											selected.average.toLocaleString(
+												locale,
+												{
+													minimumFractionDigits: 1,
+													maximumFractionDigits: 1,
+												},
+											)
+										}}</span
 									><span class="text-xs">/ 5</span>
 								</p>
 								<p
 									v-else
 									class="text-sm font-medium text-muted"
 								>
-									Unrated
+									{{ t("unrated") }}
 								</p>
 								<div>
 									<p class="text-sm font-medium">
-										Community rating
+										{{ t("communityRating") }}
 									</p>
 									<p class="text-xs text-muted">
-										{{ selected.ratings.length }}
 										{{
-											selected.ratings.length === 1
-												? "member has"
-												: "members have"
+											t(
+												"ratedProduct",
+												selected.ratings.length,
+											)
 										}}
-										rated this product
 									</p>
 								</div>
 							</div>
@@ -476,16 +494,18 @@ async function save() {
 									color="neutral"
 									variant="outline"
 									size="sm"
-									>Product link</UButton
 								>
+									{{ t("productLink") }}
+								</UButton>
 								<UButton
 									v-if="selected.canEdit"
 									color="neutral"
 									variant="outline"
 									size="sm"
 									@click="edit(selected)"
-									>Edit product</UButton
 								>
+									{{ t("editProduct") }}
+								</UButton>
 							</div>
 						</div>
 						<p
@@ -499,12 +519,12 @@ async function save() {
 							class="flex flex-wrap gap-1.5"
 						>
 							<UBadge
-								v-for="t in selected.tags"
-								:key="t"
+								v-for="productTag in selected.tags"
+								:key="productTag"
 								color="neutral"
 								variant="soft"
 								size="sm"
-								>{{ t }}</UBadge
+								>{{ productTag }}</UBadge
 							>
 						</div>
 					</div>
@@ -533,20 +553,24 @@ async function save() {
 								/>
 								<div>
 									<h3 class="font-semibold text-highlighted">
-										Your rating
+										{{ t("yourRating") }}
 									</h3>
 									<p class="text-xs text-muted">
 										{{
 											selected.mine
-												? "You can update your review anytime."
-												: "Tried it? Share your experience."
+												? t(
+														"youCanUpdateYourReviewAnytime",
+													)
+												: t(
+														"triedItShareYourExperience",
+													)
 										}}
 									</p>
 								</div>
 							</div>
 							<UFormField
-								label="Score"
-								help="1 = poor, 5 = excellent"
+								:label="t('score')"
+								:help="t('1Poor5Excellent')"
 							>
 								<div
 									class="flex flex-wrap items-center gap-3 py-1"
@@ -565,7 +589,7 @@ async function save() {
 									>
 								</div>
 							</UFormField>
-							<UFormField label="Review (optional)"
+							<UFormField :label="t('reviewOptional')"
 								><UTextarea
 									v-model="note"
 									:rows="4"
@@ -582,8 +606,8 @@ async function save() {
 							<div class="flex flex-wrap items-center gap-2">
 								<UButton type="submit" :loading="busy">{{
 									selected.mine
-										? "Update rating"
-										: "Save rating"
+										? t("updateRating")
+										: t("saveRating")
 								}}</UButton>
 								<UButton
 									v-if="selected.mine"
@@ -601,8 +625,9 @@ async function save() {
 											score = 3
 										})
 									"
-									>Remove rating</UButton
 								>
+									{{ t("removeRating") }}
+								</UButton>
 							</div>
 						</form>
 						<section
@@ -616,7 +641,7 @@ async function save() {
 									id="other-ratings-heading"
 									class="font-semibold text-highlighted"
 								>
-									Other ratings
+									{{ t("otherRatings") }}
 								</h3>
 								<UBadge
 									color="neutral"
@@ -631,8 +656,12 @@ async function save() {
 							>
 								{{
 									selected.mine
-										? "No other members have rated this product yet."
-										: "No ratings yet. Be the first to share yours."
+										? t(
+												"noOtherMembersHaveRatedThisProductYet",
+											)
+										: t(
+												"noRatingsYetBeTheFirstToShareYours",
+											)
 								}}
 							</p>
 							<div v-else class="divide-y divide-default">
