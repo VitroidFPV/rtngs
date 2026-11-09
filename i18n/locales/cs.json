@@ -131,5 +131,7 @@
 	"validation13": "Odkaz: povolená délka je 0–2000 znaků.",
 	"validation14": "Štítek: povolená délka je 1–32 znaků.",
 	"validation15": "Recenze: povolená délka je 0–1000 znaků.",
-	"confirmRevokeAccess": "Odebrat přístup?"
+	"confirmRevokeAccess": "Odebrat přístup?",
+	"deleteProduct": "Smazat produkt",
+	"confirmDeleteProduct": "Smazat „{name}“ a všechna jeho hodnocení? Tuto akci nelze vrátit zpět."
 }

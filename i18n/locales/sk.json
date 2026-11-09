@@ -131,5 +131,7 @@
 	"validation13": "Odkaz: povolená dĺžka je 0–2000 znakov.",
 	"validation14": "Štítok: povolená dĺžka je 1–32 znakov.",
 	"validation15": "Recenzia: povolená dĺžka je 0–1000 znakov.",
-	"confirmRevokeAccess": "Odobrať prístup?"
+	"confirmRevokeAccess": "Odobrať prístup?",
+	"deleteProduct": "Vymazať produkt",
+	"confirmDeleteProduct": "Vymazať „{name}“ a všetky jeho hodnotenia? Túto akciu nemožno vrátiť späť."
 }

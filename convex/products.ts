@@ -37,6 +37,7 @@ export const list = query({
 				return {
 					...product,
 					canEdit: product.createdBy === user._id,
+					canDelete: true,
 					ratings,
 					mine: ratings.find((r) => r.userId === user._id) ?? null,
 					average: ratings.length
@@ -108,5 +109,19 @@ export const removeRating = mutation({
 			)
 			.unique()
 		if (rating) await ctx.db.delete(rating._id)
+	},
+})
+
+export const remove = mutation({
+	args: { productId: v.id("products") },
+	handler: async (ctx, args) => {
+		await member(ctx)
+		const ratings = await ctx.db
+			.query("ratings")
+			.withIndex("by_product", (q) => q.eq("productId", args.productId))
+			.collect()
+		for (const rating of ratings) await ctx.db.delete(rating._id)
+		if (await ctx.db.get(args.productId))
+			await ctx.db.delete(args.productId)
 	},
 })

@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, expect, test } from "bun:test"
 import { requestAccess, decide, list } from "../convex/members"
+import { remove } from "../convex/products"
+import type { Id } from "../convex/_generated/dataModel"
 import { member } from "../convex/lib/access"
 import type {
 	FunctionArgs,
@@ -192,4 +194,65 @@ test("an initial allowlisted member can be revoked without first requesting acce
 	await handler(decide)(app.ctx, { discordId: guestId, approve: false })
 	app.as(guestId)
 	await expect(member(app.ctx)).rejects.toThrow()
+})
+
+test("approved members can delete products and ratings; guests and revoked users cannot", async () => {
+	const app = setup()
+	const productId = "products:1" as Id<"products">
+	const records = new Map([
+		[productId as string, { _id: productId }],
+		["ratings:1", { _id: "ratings:1", productId }],
+		["ratings:2", { _id: "ratings:2", productId }],
+		["ratings:3", { _id: "ratings:3", productId: "products:2" }],
+	])
+	const query = app.ctx.db.query.bind(app.ctx.db)
+	Object.assign(app.ctx.db, {
+		query: (table: string) =>
+			table === "ratings"
+				? {
+						withIndex: (
+							_index: string,
+							filter: (q: unknown) => unknown,
+						) => {
+							let target: unknown
+							filter({
+								eq: (_field: string, value: unknown) => {
+									target = value
+								},
+							})
+							return {
+								collect: async () =>
+									[...records.values()].filter(
+										(row) =>
+											"productId" in row &&
+											row.productId === target,
+									),
+							}
+						},
+					}
+				: query(table as "members"),
+		get: async (id: string) => records.get(id) ?? null,
+		delete: async (id: string) => {
+			records.delete(id)
+		},
+	})
+	await expect(handler(remove)(app.ctx, { productId })).rejects.toThrow(
+		"MEMBERS_ONLY",
+	)
+	expect(records.size).toBe(4)
+	app.as(adminId)
+	await handler(decide)(app.ctx, { discordId: guestId, approve: true })
+	app.as(guestId)
+	await handler(remove)(app.ctx, { productId })
+	expect([...records.keys()]).toEqual(["ratings:3"])
+	await handler(remove)(app.ctx, { productId })
+	expect([...records.keys()]).toEqual(["ratings:3"])
+	app.as(adminId)
+	await handler(decide)(app.ctx, { discordId: guestId, approve: false })
+	app.as(guestId)
+	await expect(handler(remove)(app.ctx, { productId })).rejects.toThrow(
+		"MEMBERS_ONLY",
+	)
+	app.as(null)
+	await expect(handler(remove)(app.ctx, { productId })).rejects.toThrow()
 })

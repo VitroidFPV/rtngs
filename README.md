@@ -1,6 +1,6 @@
 # rtngs
 
-A members-only product rating library built with Nuxt, Nuxt UI, Convex, and Better Auth. Sign in with Discord to request access; members can add products and leave editable 1–5 ratings and reviews.
+A members-only product rating library built with Nuxt, Nuxt UI, Convex, and Better Auth. Sign in with Discord to request access; members can add or delete products and leave editable 1–5 ratings and reviews.
 
 ## Development
 

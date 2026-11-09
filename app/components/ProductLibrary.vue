@@ -129,6 +129,16 @@ async function run(action: () => Promise<unknown>) {
 		busy.value = false
 	}
 }
+async function remove(product: Product) {
+	if (!window.confirm(t("confirmDeleteProduct", { name: product.name })))
+		return
+	await run(async () => {
+		await props.client.mutation(api.products.remove, {
+			productId: product._id,
+		})
+		selected.value = null
+	})
+}
 async function save() {
 	await run(async () => {
 		await props.client.mutation(api.products.save, {
@@ -154,19 +164,6 @@ async function save() {
 		role="status"
 	/>
 	<section v-else class="space-y-8">
-		<!-- <div class="section-header">
-			<div>
-				<h1 class="section-title"> {{ t("products") }} </h1>
-				<p class="section-description"> {{ t("findSomethingWorthTryingShareWhatYouThink") }} </p>
-			</div>
-			<div class="section-actions">
-				<slot name="actions" /><UButton
-					:disabled="!products"
-					@click="edit()"
-					> {{ t("addProduct") }} </UButton
-				>
-			</div>
-		</div> -->
 		<UAlert
 			v-if="error"
 			:title="t('couldNotCompleteRequest')"
@@ -241,7 +238,15 @@ async function save() {
 				{{ t("clearFilters") }}
 			</UButton>
 		</div>
-		<div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+		<div v-if="products" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+			<button
+				type="button"
+				class="product-card surface-panel min-h-52 p-5 sm:p-6 flex flex-col items-center justify-center gap-3 border-dashed text-muted hover:text-primary"
+				@click="edit()"
+			>
+				<UIcon name="i-lucide-plus" class="size-8" aria-hidden="true" />
+				<span class="font-medium">{{ t("addProduct") }}</span>
+			</button>
 			<button
 				v-for="product in visible"
 				:key="product._id"
@@ -513,7 +518,11 @@ async function save() {
 								</div>
 							</div>
 							<div
-								v-if="selected.url || selected.canEdit"
+								v-if="
+									selected.url ||
+									selected.canEdit ||
+									selected.canDelete
+								"
 								class="flex flex-wrap gap-2"
 							>
 								<UButton
@@ -535,6 +544,16 @@ async function save() {
 									@click="edit(selected)"
 								>
 									{{ t("editProduct") }}
+								</UButton>
+								<UButton
+									v-if="selected.canDelete"
+									color="error"
+									variant="outline"
+									size="sm"
+									:disabled="busy"
+									@click="remove(selected)"
+								>
+									{{ t("deleteProduct") }}
 								</UButton>
 							</div>
 						</div>

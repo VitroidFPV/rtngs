@@ -131,5 +131,7 @@
 	"validation13": "Link must be 0-2000 characters.",
 	"validation14": "Tag must be 1-32 characters.",
 	"validation15": "Review must be 0-1000 characters.",
-	"confirmRevokeAccess": "Revoke access?"
+	"confirmRevokeAccess": "Revoke access?",
+	"deleteProduct": "Delete product",
+	"confirmDeleteProduct": "Delete “{name}” and all its ratings? This cannot be undone."
 }
