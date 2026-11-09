@@ -30,6 +30,7 @@
 	"checkingMembership": "Overovanie členstva",
 	"backToProducts": "Späť na produkty",
 	"manageMembers": "Spravovať členov",
+	"pendingJoinRequests": "Žiadosti o pripojenie čakajúce na schválenie: {count}",
 	"libraryAccess": "Prístup do knižnice",
 	"yourAccountIsConnectedMembershipGivesYouAccessToProductsAndReviews": "Váš účet je pripojený. Členstvo vám umožní prezerať produkty a recenzie.",
 	"accessRequested": "Žiadosť o prístup odoslaná",

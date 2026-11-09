@@ -30,6 +30,7 @@
 	"checkingMembership": "Checking membership",
 	"backToProducts": "Back to products",
 	"manageMembers": "Manage members",
+	"pendingJoinRequests": "Pending join requests: {count}",
 	"libraryAccess": "Library access",
 	"yourAccountIsConnectedMembershipGivesYouAccessToProductsAndReviews": "Your account is connected. Membership gives you access to products and reviews.",
 	"accessRequested": "Access requested",
