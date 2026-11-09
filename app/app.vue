@@ -1,5 +1,5 @@
 <script setup lang="ts">
-useHead({ title: 'rtngs', meta: [{ name: 'description', content: 'A private product library for sharing products and ratings.' }] })
+useHead({ title: 'rtngs', link: [{ rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }], meta: [{ name: 'description', content: 'A private product library for sharing products and ratings.' }] })
 const colorMode = useColorMode()
 </script>
 <template>
