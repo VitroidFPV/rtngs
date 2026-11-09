@@ -182,9 +182,19 @@ onBeforeUnmount(() => {
 		</template>
 		<section
 			v-else
-			class="surface-panel mx-auto max-w-xl p-6 sm:p-10 my-6 sm:my-12"
+			class="mx-auto flex max-w-sm flex-col items-center px-2 py-16 text-center sm:py-24"
+			aria-labelledby="sign-in-title"
 		>
-			<UButton size="lg" :loading="busy" @click="signIn">
+			<h1
+				id="sign-in-title"
+				class="text-2xl font-semibold tracking-tight text-highlighted"
+			>
+				{{ t("signInToRtngs") }}
+			</h1>
+			<p class="mt-3 text-sm text-muted">
+				{{ t("useYourDiscordAccountToAccessTheLibrary") }}
+			</p>
+			<UButton class="mt-8" size="lg" :loading="busy" @click="signIn">
 				{{ t("continueWithDiscord") }}
 			</UButton>
 		</section>
