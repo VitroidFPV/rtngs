@@ -1,94 +1,52 @@
 # rtngs
 
-Product ratings for members, built with Nuxt 4, Nuxt UI, Convex, and Better Auth with Discord sign-in.
+A members-only product rating library built with Nuxt, Nuxt UI, Convex, and Better Auth. Sign in with Discord to request access; members can add products and leave editable 1–5 ratings and reviews.
 
-Authentication runs in Convex. The browser uses Better Auth’s Vue client and Convex’s browser client; the sign-in UI is client-only.
+## Development
 
-## Run locally
-
-Use Bun 1.4.2 (see `packageManager` in `package.json`).
+Requires Bun 1.4.2, a Convex deployment, and a [Discord application](https://discord.com/developers/applications).
 
 ```sh
 bun install --frozen-lockfile
 bun run convex:dev
 ```
 
-The Convex CLI configures a development deployment and writes `CONVEX_URL` and `CONVEX_SITE_URL` to `.env.local`. Nuxt uses those values directly. Keep the exact URLs, including any region such as `.eu-west-1`. Remove stale `NUXT_PUBLIC_CONVEX_URL` / `NUXT_PUBLIC_CONVEX_SITE_URL` overrides when switching deployments. Restart Nuxt after changing `.env.local`.
+Convex configures the development deployment and writes its URLs to `.env.local`. Keep the exact URLs, including the region, and remove stale `NUXT_PUBLIC_CONVEX_*` overrides.
 
-For a cloud deployment, the backend stays available without a local Convex process; `convex dev` watches and deploys code changes. For a local deployment, keep it running to serve ports 3210 and 3211.
-
-Create an application in the [Discord Developer Portal](https://discord.com/developers/applications). Under OAuth2, add your deployment's `CONVEX_SITE_URL` followed by `/api/auth/callback/discord`. For the current cloud development deployment:
-
-```text
-https://kindly-stork-422.eu-west-1.convex.site/api/auth/callback/discord
-```
-
-Set these **on the Convex development deployment**, not in Nuxt's public runtime config:
+Add `<CONVEX_SITE_URL>/api/auth/callback/discord` as an OAuth2 redirect in Discord, then set the backend environment:
 
 ```sh
 bunx convex env set SITE_URL http://localhost:3000
 bunx convex env set BETTER_AUTH_SECRET "$(openssl rand -base64 32)"
 bunx convex env set DISCORD_CLIENT_ID YOUR_CLIENT_ID
 bunx convex env set DISCORD_CLIENT_SECRET
+bunx convex env set ADMIN_DISCORD_IDS YOUR_DISCORD_USER_ID
 ```
 
-The last command prompts for the secret. Never commit credentials. Then run:
+The client secret command prompts for its value. Keep credentials out of source control.
+
+In another terminal, start the frontend:
 
 ```sh
 bun run dev
 ```
 
-Use `http://localhost:3000` consistently: it must match `SITE_URL`.
+Open `http://localhost:3000` to match `SITE_URL`. Restart Nuxt after changing `.env.local`. Keep `convex:dev` running to sync backend changes; local Convex deployments also need it to serve requests.
 
-## Production (Netlify)
+## Membership
 
-Development and production use separate Convex deployments and databases:
+`ADMIN_DISCORD_IDS` is a comma-separated list of approvers. They have access automatically and can approve requests, add members by Discord ID, or revoke access through **Manage members**. Enable Discord's Developer Mode to copy user IDs.
 
-| | Development | Production |
-| --- | --- | --- |
-| Frontend | `http://localhost:3000` | `https://rtngs.vitroidfpv.com` |
-| Convex deployment | `kindly-stork-422` | `abundant-civet-657` |
-| Frontend configuration | `.env.local` | Netlify environment variables |
+Other users select **Request access** after signing in. Revoked users must contact an approver. Optional `MEMBER_DISCORD_IDS` seeds initial access; database membership status takes precedence. Both settings belong in Convex.
 
-Keep `.env.local` pointed at development. Run `bun run convex:dev` to deploy
-development backend changes, and `bun run dev` for the local frontend.
+## Production
 
-`netlify.toml` deploys the production backend before publishing the frontend.
-The production command is:
+[rtngs.vitroidfpv.com](https://rtngs.vitroidfpv.com) runs on Netlify with a separate Convex production database. Keep `.env.local` pointed at development.
 
-```sh
-bunx convex deploy --cmd "bunx nuxt build" --cmd-url-env-var-name CONVEX_URL
-```
-
-Convex supplies both production URLs to the build. This invokes Nuxt directly
-so the local build script's `.env.local` is not loaded. Netlify also stores the
-production `CONVEX_URL` and `CONVEX_SITE_URL`; remove any stale
-`NUXT_PUBLIC_CONVEX_URL` / `NUXT_PUBLIC_CONVEX_SITE_URL` overrides. The
-`CONVEX_DEPLOY_KEY` is a credential set only for the production deploy context. Do not set
-`CONVEX_DEPLOYMENT` in Netlify. Deploy previews are not configured with their
-own backend or auth origin.
-
-Set these on the **production Convex deployment**, separately from development:
-
-- `SITE_URL=https://rtngs.vitroidfpv.com` (no trailing slash)
-- `DISCORD_CLIENT_ID` and `DISCORD_CLIENT_SECRET` from the same Discord app
-- A separate `BETTER_AUTH_SECRET`
-- `ADMIN_DISCORD_IDS` for production approvers
-
-Use `bunx convex env ... --prod` to manage production variables; without
-`--prod`, the CLI manages development. Development's `SITE_URL` is
-`http://localhost:3000`. CORS origins must match exactly, without trailing slashes.
-
-Keep both redirect URLs in the Discord application's OAuth2 settings:
-
-```text
-https://kindly-stork-422.eu-west-1.convex.site/api/auth/callback/discord
-https://abundant-civet-657.eu-west-1.convex.site/api/auth/callback/discord
-```
-
-Production starts with its own empty database. Development products, ratings,
-sessions, and membership approvals are not copied. Configured approvers can
-sign in and approve production members.
+- Netlify's production build deploys Convex before building Nuxt (see `netlify.toml`). Set `CONVEX_DEPLOY_KEY` only in the production context, plus production `CONVEX_URL` and `CONVEX_SITE_URL`. Do not set `CONVEX_DEPLOYMENT` or stale `NUXT_PUBLIC_CONVEX_*` overrides.
+- Set production Convex variables with `bunx convex env set <NAME> <VALUE> --prod`: `SITE_URL=https://rtngs.vitroidfpv.com`, Discord credentials, a separate `BETTER_AUTH_SECRET`, and `ADMIN_DISCORD_IDS`.
+- Add the production `<CONVEX_SITE_URL>/api/auth/callback/discord` redirect to Discord alongside development's. `SITE_URL` must match the frontend origin exactly, without a trailing slash.
+- Production data and membership approvals are separate from development. Deploy previews have no dedicated backend or auth origin.
 
 ## Checks
 
@@ -97,39 +55,3 @@ bun test
 bun run typecheck
 bun run build
 ```
-
-Discord sign-in allows any Discord account, but product access requires membership. Discord accounts without an email may need Better Auth's [provider profile fallback](https://better-auth.com/docs/authentication/discord).
-
-Auth setup follows [Convex + Better Auth](https://labs.convex.dev/better-auth/framework-guides/react), adapted to Better Auth's Vue client and Convex's framework-independent browser client. No React UI or extra database is used.
-
-## Product library
-
-Products have a name, optional brand, description and http(s) link, and up to 10
-lowercase tags. Members can add products; only their creator can edit them.
-Each member has one editable 1-5 rating and optional review per product. Ratings
-can be removed. Library changes arrive through Convex subscriptions.
-
-Set `ADMIN_DISCORD_IDS` in the Convex deployment environment to a comma-separated
-list of trusted approvers' Discord user IDs. Approvers automatically have product
-access and can use **Manage members** to approve requests, add members by ID, or
-revoke access. The app cannot grant approver privileges.
-
-Other users sign in and select **Request access**. Requests stay pending until an
-approver approves or declines them. Revoked users must contact an approver;
-requesting again cannot restore access. Membership updates are reactive.
-Approvals store the approver ID and timestamp. Every approval/revocation is also
-recorded in `membershipEvents`.
-
-`MEMBER_DISCORD_IDS` remains an optional initial member allowlist for existing
-users. An explicit database status overrides it, so these members can be revoked
-by ID too. Both settings are server-side. Without an approver, approved database
-membership, or an initial allowlist entry, access is denied. Membership checks use
-the authenticated Discord account ID, not an ID supplied by the browser or the
-internal Better Auth user ID. Email verification is not required.
-
-To copy an ID in Discord, enable Developer Mode under Settings > Advanced,
-then right-click a user and choose Copy User ID. Existing Discord accounts and redirect
-handling are unchanged.
-
-Deploy development schema/functions with `bun run convex:dev`. Netlify deploys
-production schema/functions as part of the production build.
