@@ -164,7 +164,7 @@ async function save() {
 		role="status"
 	/>
 	<section v-else class="space-y-8">
-		<div v-if="$slots.actions" class="flex justify-end">
+		<div class="flex min-h-8 justify-end">
 			<slot name="actions" />
 		</div>
 		<UAlert
@@ -196,24 +196,21 @@ async function save() {
 					class="w-full sm:min-w-36"
 			/></UFormField>
 		</div>
-		<p
-			v-if="products"
-			class="text-sm text-muted"
-			role="status"
-			aria-live="polite"
-		>
-			{{ t("productCount", visible.length) }}
-			<span v-if="search || tag !== 0">{{ t("matchingFilters") }}</span>
-			<span v-else>{{ t("inLibrary") }}</span>
+		<p class="min-h-5 text-sm text-muted" role="status" aria-live="polite">
+			<template v-if="products">
+				{{ t("productCount", visible.length) }}
+				<span v-if="search || tag !== 0">{{
+					t("matchingFilters")
+				}}</span>
+				<span v-else>{{ t("inLibrary") }}</span>
+			</template>
+			<USkeleton v-else class="h-4 w-36" aria-hidden="true" />
 		</p>
-		<div
+		<ProductGridSkeleton
 			v-if="!products && !error"
-			class="grid gap-5 sm:grid-cols-2"
 			role="status"
 			:aria-label="t('loadingProducts')"
-		>
-			<USkeleton v-for="i in 4" :key="i" class="h-52 rounded-xl" />
-		</div>
+		/>
 		<div
 			v-else-if="products && !visible.length"
 			class="empty-state"
@@ -244,7 +241,7 @@ async function save() {
 		<div v-if="products" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 			<button
 				type="button"
-				class="product-card surface-panel min-h-52 p-5 sm:p-6 flex flex-col items-center justify-center gap-3 border-dashed text-muted hover:text-primary"
+				class="product-card surface-panel min-h-64 p-5 sm:p-6 flex flex-col items-center justify-center gap-3 border-dashed text-muted hover:text-primary"
 				@click="edit()"
 			>
 				<UIcon name="i-lucide-plus" class="size-8" aria-hidden="true" />
@@ -253,7 +250,7 @@ async function save() {
 			<button
 				v-for="product in visible"
 				:key="product._id"
-				class="product-card surface-panel group text-left p-5 sm:p-6 flex flex-col gap-4"
+				class="product-card surface-panel min-h-64 group text-left p-5 sm:p-6 flex flex-col gap-4"
 				@click="open(product)"
 			>
 				<div class="flex items-start justify-between gap-3 w-full">

@@ -43,9 +43,8 @@ async function request() {
 			color="error"
 			role="alert"
 		/>
-		<USkeleton
+		<LibrarySkeleton
 			v-if="!status && !error"
-			class="h-40 w-full"
 			:aria-label="t('checkingMembership')"
 		/>
 		<template v-if="status">

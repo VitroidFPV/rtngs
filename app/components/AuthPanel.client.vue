@@ -142,14 +142,10 @@ onBeforeUnmount(() => {
 			role="alert"
 			class="mb-6"
 		/>
-		<div
+		<LibrarySkeleton
 			v-if="pending"
-			class="space-y-4"
-			role="status"
 			:aria-label="t('checkingYourSession')"
-		>
-			<USkeleton class="h-10 w-48" /><USkeleton class="h-40 w-full" />
-		</div>
+		/>
 		<template v-else-if="user">
 			<Teleport to="#account-actions">
 				<div class="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -174,11 +170,7 @@ onBeforeUnmount(() => {
 				</div>
 			</Teleport>
 			<MemberAccess v-if="authenticated && client" :client="client" />
-			<USkeleton
-				v-else
-				class="h-48 w-full"
-				:aria-label="t('connectingToLibrary')"
-			/>
+			<LibrarySkeleton v-else :aria-label="t('connectingToLibrary')" />
 		</template>
 		<section
 			v-else

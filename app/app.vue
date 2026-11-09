@@ -68,8 +68,7 @@ const colorMode = useColorMode()
 			<main class="py-8 sm:pt-12 pb-20">
 				<ClientOnly
 					><AuthPanel /><template #fallback
-						><USkeleton
-							class="h-48 w-full"
+						><LibrarySkeleton
 							:aria-label="t('loadingLibrary')" /></template
 				></ClientOnly>
 			</main>
