@@ -14,7 +14,7 @@ const colorMode = useColorMode()
 </script>
 <template>
 	<UApp>
-		<UContainer class="max-w-5xl min-h-[100dvh] px-4 sm:px-8">
+		<UContainer class="max-w-7xl min-h-[100dvh] px-4 sm:px-8">
 			<header
 				class="app-header flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-b border-default py-5"
 			>

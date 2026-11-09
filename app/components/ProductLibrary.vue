@@ -142,7 +142,7 @@ async function save() {
 		role="status"
 	/>
 	<section v-else class="space-y-8">
-		<div class="section-header">
+		<!-- <div class="section-header">
 			<div>
 				<h1 class="section-title">Products</h1>
 				<p class="section-description">
@@ -156,7 +156,7 @@ async function save() {
 					>Add product</UButton
 				>
 			</div>
-		</div>
+		</div> -->
 		<UAlert
 			v-if="error"
 			title="Could not complete request"
@@ -321,7 +321,7 @@ async function save() {
 						/>
 						<span
 							aria-hidden="true"
-							class="absolute -bottom-1 -right-1 flex size-6 items-center justify-center rounded-full border-2 border-[var(--app-surface)] bg-primary text-inverted text-xs font-semibold tabular-nums"
+							class="absolute -bottom-1 -right-1 flex size-5 items-center justify-center rounded-full border-2 border-[var(--app-surface)] bg-primary text-inverted text-[0.66rem] font-semibold tabular-nums"
 							>{{ rating.score }}</span
 						>
 					</span>
