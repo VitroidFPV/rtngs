@@ -1,14 +1,15 @@
+<script setup lang="ts">
+useHead({ title: 'rtngs', meta: [{ name: 'description', content: 'A private product library for sharing products and ratings.' }] })
+const colorMode = useColorMode()
+</script>
 <template>
   <UApp>
-    <UContainer class="max-w-xl py-16 space-y-8">
-      <header class="space-y-2">
-        <h1 class="text-3xl font-semibold">rtngs</h1>
-        <p class="text-muted">Product ratings for friends.</p>
+    <UContainer class="max-w-5xl min-h-[100dvh] px-4 sm:px-8">
+      <header class="h-18 flex items-center justify-between border-b border-default mb-8">
+        <a href="/" class="text-2xl font-semibold tracking-tighter" aria-label="rtngs home">rtngs<span class="text-primary">.</span></a>
+        <UButton color="neutral" variant="ghost" size="sm" @click="colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'">Switch theme</UButton>
       </header>
-      <ClientOnly>
-        <AuthPanel />
-        <template #fallback><p role="status">Loading…</p></template>
-      </ClientOnly>
+      <main class="pb-20"><ClientOnly><AuthPanel /><template #fallback><USkeleton class="h-48 w-full" aria-label="Loading library" /></template></ClientOnly></main>
     </UContainer>
   </UApp>
 </template>

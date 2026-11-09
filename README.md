@@ -1,6 +1,6 @@
 # rtngs
 
-Product ratings for friends, built with Nuxt 4, Nuxt UI, Convex, and Better Auth with Discord sign-in. Product and rating features are not implemented yet.
+Product ratings for members, built with Nuxt 4, Nuxt UI, Convex, and Better Auth with Discord sign-in. Product and rating features are not implemented yet.
 
 Authentication runs in Convex. The browser uses Better Auth’s Vue client and Convex’s browser client; the sign-in UI is client-only.
 
@@ -48,6 +48,38 @@ bun run typecheck
 bun run build
 ```
 
-Discord sign-in currently allows any Discord account. Add an invite/allowlist check in Convex before sharing the app. Discord accounts without an email may need Better Auth's [provider profile fallback](https://better-auth.com/docs/authentication/discord).
+Discord sign-in allows any Discord account, but product access requires membership. Discord accounts without an email may need Better Auth's [provider profile fallback](https://better-auth.com/docs/authentication/discord).
 
 Auth setup follows [Convex + Better Auth](https://labs.convex.dev/better-auth/framework-guides/react), adapted to Better Auth's Vue client and Convex's framework-independent browser client. No React UI or extra database is used.
+
+## Product library
+
+Products have a name, optional brand, description and http(s) link, and up to 10
+lowercase tags. Members can add products; only their creator can edit them.
+Each member has one editable 1-5 rating and optional review per product. Ratings
+can be removed. Library changes arrive through Convex subscriptions.
+
+Set `ADMIN_DISCORD_IDS` in the Convex deployment environment to a comma-separated
+list of trusted approvers' Discord user IDs. Approvers automatically have product
+access and can use **Manage members** to approve requests, add members by ID, or
+revoke access. The app cannot grant approver privileges.
+
+Other users sign in and select **Request access**. Requests stay pending until an
+approver approves or declines them. Revoked users must contact an approver;
+requesting again cannot restore access. Membership updates are reactive.
+Approvals store the approver ID and timestamp. Every approval/revocation is also
+recorded in `membershipEvents`.
+
+`MEMBER_DISCORD_IDS` remains an optional initial member allowlist for existing
+users. An explicit database status overrides it, so these members can be revoked
+by ID too. Both settings are server-side. Without an approver, approved database
+membership, or an initial allowlist entry, access is denied. Membership checks use
+the authenticated Discord account ID, not an ID supplied by the browser or the
+internal Better Auth user ID. Email verification is not required.
+
+To copy an ID in Discord, enable Developer Mode under Settings > Advanced,
+then right-click a user and choose Copy User ID. Existing Discord accounts and redirect
+handling are unchanged.
+
+Deploy the updated schema/functions with the existing `bun run convex:dev`
+workflow. No new Convex project or Discord application is needed.

@@ -8,6 +8,7 @@ const config = useRuntimeConfig()
 const configured = Boolean(config.public.convexUrl && config.public.convexSiteUrl)
 const error = ref('')
 const busy = ref(false)
+const authenticated = ref(false)
 const completingSignIn = ref(new URL(window.location.href).searchParams.has('ott'))
 
 // This component is client-only: each browser owns its auth clients and session.
@@ -40,6 +41,7 @@ watch(() => user.value?.id, () => {
 }, { immediate: true })
 
 function onAuthenticationChange(isAuthenticated: boolean) {
+  authenticated.value = isAuthenticated
   if (!isAuthenticated && user.value && !error.value) {
     error.value = 'Could not authenticate with Convex. Please sign in again.'
   }
@@ -85,25 +87,17 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <UAlert
-    v-if="!configured"
-    title="Connect a Convex deployment"
-    description="Set CONVEX_URL and CONVEX_SITE_URL in .env.local, then restart Nuxt."
-    color="warning"
-  />
+  <UAlert v-if="!configured" title="Connect a Convex deployment" description="Set CONVEX_URL and CONVEX_SITE_URL in .env.local, then restart Nuxt." color="warning" />
   <template v-else>
-    <UAlert v-if="error" title="Sign-in error" :description="error" color="error" role="alert" />
-    <UCard>
-      <template #header><h2 class="font-semibold">Your account</h2></template>
-      <p v-if="pending" role="status">Checking your session…</p>
-      <div v-else-if="user" class="flex items-center justify-between gap-4">
-        <div class="flex items-center gap-3">
-          <UAvatar :src="user.image ?? undefined" :alt="user.name" />
-          <p>{{ user.name }}</p>
-        </div>
-        <UButton color="neutral" variant="outline" :loading="busy" @click="signOut">Sign out</UButton>
-      </div>
-      <UButton v-else :loading="busy" @click="signIn">Continue with Discord</UButton>
-    </UCard>
+    <UAlert v-if="error" title="Account error" :description="error" color="error" role="alert" class="mb-6" />
+    <div v-if="pending" class="space-y-4" role="status" aria-label="Checking your session"><USkeleton class="h-10 w-48" /><USkeleton class="h-40 w-full" /></div>
+    <template v-else-if="user">
+      <div class="flex items-center justify-end gap-3 mb-12"><UAvatar :src="user.image ?? undefined" :alt="user.name" size="xs" /><span class="text-sm">{{ user.name }}</span><UButton color="neutral" variant="ghost" :loading="busy" @click="signOut">Sign out</UButton></div>
+      <MemberAccess v-if="authenticated && client" :client="client" />
+      <USkeleton v-else class="h-48 w-full" aria-label="Connecting to library" />
+    </template>
+    <section v-else class="py-16 sm:py-24 max-w-xl">
+      <UButton size="lg" :loading="busy" @click="signIn">Continue with Discord</UButton>
+    </section>
   </template>
 </template>
