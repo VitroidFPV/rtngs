@@ -1,4 +1,11 @@
 {
+	"searchImages": "Hľadať obrázky",
+	"searchImagesHelp": "Vyhľadajte obrázky podľa značky a názvu produktu a výberom vložte URL.",
+	"noImagesFound": "Žiadne obrázky sa nenašli. Skúste inú značku alebo názov produktu.",
+	"imageSearchResults": "Výsledky hľadania obrázkov",
+	"useImage": "Použiť obrázok: {title}",
+	"imageSearchFailed": "Vyhľadávanie obrázkov zlyhalo. Skúste to znova.",
+
 	"productImageLink": "Odkaz na obrázok produktu",
 	"productImageLinkHelp": "Voliteľný priamy odkaz na obrázok.",
 	"invalidImageLink": "Zadajte platný odkaz na obrázok.",

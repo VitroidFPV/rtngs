@@ -33,6 +33,12 @@ bun run dev
 
 Open `http://localhost:3000` to match `SITE_URL`. Restart Nuxt after changing `.env.local`. Keep `convex:dev` running to sync backend changes; local Convex deployments also need it to serve requests.
 
+## Product image search
+
+The product form can search images using the brand and product name. Select a result to fill the image URL, then save the product. You can also paste a direct image link.
+
+Search uses the same DuckDuckGo token and image-results flow as the vitroidfpv.com build-guide editor. No API key is required. Search runs in a Nuxt server route on Netlify, which verifies membership through Convex using the signed-in user’s token. Only members can search. DuckDuckGo can temporarily block automated requests; failures are shown in the form so you can retry or paste an image URL manually. Images remain hosted by their original sites.
+
 ## Membership
 
 `ADMIN_DISCORD_IDS` is a comma-separated list of approvers. They have access automatically and can approve requests, add members by Discord ID, or revoke access through **Manage members** at `/members`. Enable Discord's Developer Mode to copy user IDs.

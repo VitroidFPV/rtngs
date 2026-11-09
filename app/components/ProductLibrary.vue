@@ -6,6 +6,7 @@ import { api } from "../../convex/_generated/api"
 import type { Id } from "../../convex/_generated/dataModel"
 const { t, locale } = useI18n()
 const localizedError = useLocalizedError()
+const getConvexToken = inject<() => Promise<string | null>>("getConvexToken")
 const props = defineProps<{ client: ConvexClient }>()
 type Product = FunctionReturnType<typeof api.products.list>[number]
 const products = ref<Product[] | null>(null)
@@ -32,6 +33,55 @@ const form = reactive({
 	imageUrl: "",
 	tags: "",
 })
+const imageResults = ref<{ url: string; title: string }[]>([])
+const imageSearching = ref(false)
+const imageSearched = ref(false)
+const imageError = ref("")
+let imageRequest = 0
+watch([() => form.name, () => form.brand, editing], () => {
+	imageRequest++
+	imageSearching.value = false
+	imageResults.value = []
+	imageSearched.value = false
+	imageError.value = ""
+})
+function imageHost(url: string) {
+	return new URL(url).hostname.replace(/^www\./, "")
+}
+async function findImages() {
+	const request = ++imageRequest
+	imageSearching.value = true
+	imageResults.value = []
+	imageSearched.value = false
+	imageError.value = ""
+	try {
+		const token = await getConvexToken?.()
+		if (!token) {
+			if (request === imageRequest) imageError.value = t("validation9")
+			return
+		}
+		const results = await $fetch("/api/product-images", {
+			query: { name: form.name, brand: form.brand },
+			headers: { Authorization: `Bearer ${token}` },
+		})
+		if (request !== imageRequest) return
+		imageResults.value = results
+		imageSearched.value = true
+	} catch (cause) {
+		if (request === imageRequest) {
+			const status = (cause as { statusCode?: number }).statusCode
+			imageError.value = t(
+				status === 401
+					? "validation9"
+					: status === 403
+						? "accessError"
+						: "imageSearchFailed",
+			)
+		}
+	} finally {
+		if (request === imageRequest) imageSearching.value = false
+	}
+}
 const score = ref(3)
 const note = ref("")
 const tags = computed(() => [
@@ -410,6 +460,72 @@ async function save() {
 								class="w-full"
 							/>
 						</UFormField>
+						<UButton
+							type="button"
+							color="neutral"
+							variant="outline"
+							icon="i-lucide-search"
+							:loading="imageSearching"
+							:disabled="!form.name.trim()"
+							@click="findImages"
+							>{{ t("searchImages") }}</UButton
+						>
+						<p class="text-sm text-muted">
+							{{ t("searchImagesHelp") }}
+						</p>
+						<p
+							v-if="imageError"
+							role="alert"
+							class="text-sm text-error"
+						>
+							{{ imageError }}
+						</p>
+						<p
+							v-if="imageSearched && !imageResults.length"
+							role="status"
+							class="text-sm text-muted"
+						>
+							{{ t("noImagesFound") }}
+						</p>
+						<div
+							v-if="imageResults.length"
+							class="grid grid-cols-2 sm:grid-cols-3 gap-3"
+							:aria-label="t('imageSearchResults')"
+						>
+							<button
+								v-for="image in imageResults"
+								:key="image.url"
+								type="button"
+								class="group min-w-0 overflow-hidden rounded-lg border text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+								:class="
+									form.imageUrl === image.url
+										? 'border-primary ring-2 ring-primary'
+										: 'border-default hover:border-primary'
+								"
+								:aria-label="
+									t('useImage', { title: image.title })
+								"
+								:aria-pressed="form.imageUrl === image.url"
+								:title="image.title"
+								@click="form.imageUrl = image.url"
+							>
+								<ProductImage
+									:src="image.url"
+									:alt="image.title"
+									size="search"
+								/>
+								<span class="block space-y-1 p-3">
+									<span
+										class="line-clamp-2 text-xs font-medium leading-relaxed"
+										>{{ image.title }}</span
+									>
+									<span
+										class="block truncate text-xs text-muted"
+										>{{ imageHost(image.url) }}</span
+									>
+								</span>
+							</button>
+						</div>
 						<ProductImage :src="form.imageUrl" :alt="form.name" />
 						<UFormField :label="t('productLink')"
 							><UInput

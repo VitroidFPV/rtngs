@@ -26,6 +26,10 @@ const auth = configured
 			plugins: [convexClient(), crossDomainClient()],
 		})
 	: null
+provide("getConvexToken", async () => {
+	const result = await auth?.convex.token()
+	return result?.data?.token ?? null
+})
 const session = auth?.useSession()
 const user = computed(() => session?.value.data?.user)
 const pending = computed(

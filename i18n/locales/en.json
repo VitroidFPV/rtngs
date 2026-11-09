@@ -1,4 +1,11 @@
 {
+	"searchImages": "Search images",
+	"searchImagesHelp": "Search by brand and product name, then select an image to use its URL.",
+	"noImagesFound": "No images found. Try a different brand or product name.",
+	"imageSearchResults": "Image search results",
+	"useImage": "Use image: {title}",
+	"imageSearchFailed": "Image search failed. Please try again.",
+
 	"productImageLink": "Product image link",
 	"productImageLinkHelp": "Optional direct link to an image.",
 	"invalidImageLink": "Enter a valid image link.",

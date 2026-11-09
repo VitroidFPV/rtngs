@@ -1,6 +1,10 @@
 <script setup lang="ts">
 const props = withDefaults(
-	defineProps<{ src?: string; alt: string; size?: "thumbnail" | "detail" }>(),
+	defineProps<{
+		src?: string
+		alt: string
+		size?: "thumbnail" | "detail" | "search"
+	}>(),
 	{ size: "thumbnail" },
 )
 const { t } = useI18n()
@@ -23,7 +27,11 @@ watch(imageUrl, () => {
 		v-if="imageUrl"
 		class="shrink-0 rounded-lg overflow-hidden flex items-center justify-center"
 		:class="[
-			size === 'detail' ? 'size-24 sm:size-36' : 'size-16 sm:size-20',
+			size === 'search'
+				? 'w-full aspect-square rounded-none'
+				: size === 'detail'
+					? 'size-24 sm:size-36'
+					: 'size-16 sm:size-20',
 			failed ? 'bg-muted text-muted' : 'bg-white p-2',
 		]"
 	>
