@@ -164,6 +164,9 @@ async function save() {
 		role="status"
 	/>
 	<section v-else class="space-y-8">
+		<div v-if="$slots.actions" class="flex justify-end">
+			<slot name="actions" />
+		</div>
 		<UAlert
 			v-if="error"
 			:title="t('couldNotCompleteRequest')"
