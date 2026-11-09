@@ -184,27 +184,9 @@ onBeforeUnmount(() => {
 			v-else
 			class="surface-panel mx-auto max-w-xl p-6 sm:p-10 my-6 sm:my-12"
 		>
-			<h1
-				class="text-3xl sm:text-4xl font-semibold tracking-tight text-highlighted leading-tight"
-			>
-				{{ t("goodProducts") }} <br />
-				{{ t("honestOpinions") }}
-			</h1>
-			<p class="mt-4 max-w-sm text-muted leading-relaxed">
-				{{
-					t(
-						"aPrivateLibraryOfProductsRatingsAndReviewsFromPeopleYouKnow",
-					)
-				}}
-			</p>
-			<div class="mt-8 border-t border-default pt-6">
-				<UButton size="lg" :loading="busy" @click="signIn">
-					{{ t("continueWithDiscord") }}
-				</UButton>
-				<p class="mt-3 text-sm text-muted leading-relaxed">
-					{{ t("signInToJoinTheLibraryNewMembersCanRequestAccess") }}
-				</p>
-			</div>
+			<UButton size="lg" :loading="busy" @click="signIn">
+				{{ t("continueWithDiscord") }}
+			</UButton>
 		</section>
 	</template>
 </template>
